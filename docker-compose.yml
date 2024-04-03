@@ -37,6 +37,7 @@ services:
       - namenode
       - datanode1
       - datanode2
+      - datanode3
     volumes:
       - hadoop_historyserver:/hadoop/yarn/timeline
     ports:
@@ -51,6 +52,7 @@ services:
       - namenode
       - datanode1
       - datanode2
+      - datanode3
     ports:
       - "8042:8042"
     networks:
@@ -96,3 +98,5 @@ volumes:
 networks:
   hadoop_network:
     name: hadoop_network
+    external: true
+      
