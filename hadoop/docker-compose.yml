@@ -1,0 +1,96 @@
+services:
+  namenode:
+    image: apache/hadoop:3
+    container_name: namenode
+    hostname: namenode
+    user: root
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+      # - HADOOP_CONF_DIR=/etc/hadoop/conf
+    volumes:
+      - namenode:/opt/hadoop/data/nameNode
+      - config_namenode:/opt/hadoop/etc/hadoop
+      - ./start-hdfs.sh:/start-hdfs.sh
+    ports:
+      - "9870:9870"
+    command: [ "/bin/bash", "/start-hdfs.sh" ]
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.2
+
+  datanode1:
+    image: apache/hadoop:3
+    container_name: datanode1
+    hostname: datanode1
+    user: root
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+      # - HADOOP_CONF_DIR=/etc/hadoop/conf
+    volumes:
+      - datanode1:/opt/hadoop/data/dataNode
+      - config_datanode:/opt/hadoop/etc/hadoop
+      - ./init-datanode.sh:/init-datanode.sh
+    depends_on:
+      - namenode
+    command: [ "/bin/bash", "/init-datanode.sh" ]
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.3
+
+  datanode2:
+    image: apache/hadoop:3
+    container_name: datanode2
+    hostname: datanode2
+    user: root
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+      # - HADOOP_CONF_DIR=/etc/hadoop/conf
+    volumes:
+      - datanode2:/opt/hadoop/data/dataNode
+      - config_datanode:/opt/hadoop/etc/hadoop
+      - ./init-datanode.sh:/init-datanode.sh
+    depends_on:
+      - namenode
+    command: [ "/bin/bash", "/init-datanode.sh" ]
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.4
+
+volumes:
+  hadoop_namenode:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./namenode
+  hadoop_datanode1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./datanode1
+  hadoop_datanode2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./datanode2
+  config_namenode:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./config_datanode
+  config_datanode:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./config_datanode
+
+networks:
+  hadoop_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
