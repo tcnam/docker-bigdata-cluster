@@ -57,19 +57,19 @@ services:
         ipv4_address: 172.20.0.4
 
 volumes:
-  hadoop_namenode:
+  namenode:
     driver: local
     driver_opts:
       o: bind
       type: none
       device: ./namenode
-  hadoop_datanode1:
+  datanode1:
     driver: local
     driver_opts:
       o: bind
       type: none
       device: ./datanode1
-  hadoop_datanode2:
+  datanode2:
     driver: local
     driver_opts:
       o: bind
@@ -80,7 +80,7 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./config_datanode
+      device: ./config_namenode
   config_datanode:
     driver: local
     driver_opts:
