@@ -16,5 +16,5 @@
 #
 
 # A Spark Worker will be started on each of the machines listed below.
-datanode1
-datanode2
+worker1
+worker2
