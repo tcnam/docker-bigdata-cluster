@@ -1,60 +1,100 @@
 services:
-  namenode:
-    image: apache/hadoop:3
-    container_name: namenode
-    hostname: namenode
+  master:
+    image: hadoop_base:1.0
+    container_name: master
+    hostname: master
     user: root
     environment:
       - HADOOP_HOME=/opt/hadoop
-      # - HADOOP_CONF_DIR=/etc/hadoop/conf
+      - HDFS_NAMENODE_USER=root
+      - HDFS_DATANODE_USER=root
+      - HDFS_SECONDARYNAMENODE_USER=root
+      - YARN_RESOURCEMANAGER_USER=root
+      - YARN_NODEMANAGER_USER=root
+      - SPARK_MASTER
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
     volumes:
       - namenode:/opt/hadoop/data/nameNode
       - config_namenode:/opt/hadoop/etc/hadoop
-      - ./hadoop/start-hdfs.sh:/start-hdfs.sh
+      - config_master:/opt/spark/conf
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
     ports:
-      - "9870:9870"
-    command: [ "/bin/bash", "/start-hdfs.sh" ]
+      - "9870:9870" 
+      - "8088:8088"
+      - "7077:7077"
+      - "9000:9000"
+    # command: [ "/bin/bash", "/start-hdfs.sh" ]
+    entrypoint: ["./entrypoint.sh", "master"]
     networks:
       hadoop_network:
         ipv4_address: 172.20.0.2
 
-  datanode1:
-    image: apache/hadoop:3
-    container_name: datanode1
-    hostname: datanode1
+  worker1:
+    image: hadoop_base:1.0
+    container_name: worker1
+    hostname: worker1
     user: root
     environment:
       - HADOOP_HOME=/opt/hadoop
-      # - HADOOP_CONF_DIR=/etc/hadoop/conf
+      - HDFS_NAMENODE_USER=root
+      - HDFS_DATANODE_USER=root
+      - HDFS_SECONDARYNAMENODE_USER=root
+      - YARN_RESOURCEMANAGER_USER=root
+      - YARN_NODEMANAGER_USER=root
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
     volumes:
       - datanode1:/opt/hadoop/data/dataNode
       - config_datanode:/opt/hadoop/etc/hadoop
-      - ./hadoop/init-datanode.sh:/init-datanode.sh
+      - config_worker:/opt/spark/conf
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
-      - namenode
-    command: [ "/bin/bash", "/init-datanode.sh" ]
+      - master
+    # command: [ "/bin/bash", "-c", "/init-datanode.sh && /opt/hadoop/sbin/start_all.sh" ]
+    entrypoint: ["./entrypoint.sh", "worker"]
     networks:
       hadoop_network:
         ipv4_address: 172.20.0.3
 
-  datanode2:
-    image: apache/hadoop:3
-    container_name: datanode2
-    hostname: datanode2
+  worker2:
+    image: hadoop_base:1.0
+    container_name: worker2
+    hostname: worker2
     user: root
     environment:
       - HADOOP_HOME=/opt/hadoop
-      # - HADOOP_CONF_DIR=/etc/hadoop/conf
+      - HDFS_NAMENODE_USER=root
+      - HDFS_DATANODE_USER=root
+      - HDFS_SECONDARYNAMENODE_USER=root
+      - YARN_RESOURCEMANAGER_USER=root
+      - YARN_NODEMANAGER_USER=root
+      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
     volumes:
       - datanode2:/opt/hadoop/data/dataNode
       - config_datanode:/opt/hadoop/etc/hadoop
-      - ./hadoop/init-datanode.sh:/init-datanode.sh
+      - config_worker:/opt/spark/conf     
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
-      - namenode
-    command: [ "/bin/bash", "/init-datanode.sh" ]
+      - master
+    entrypoint: ["./entrypoint.sh", "worker"]
     networks:
       hadoop_network:
         ipv4_address: 172.20.0.4
+  
+  history_server:
+    image: hadoop_base:1.0
+    container_name: history_server
+    hostname: history_server
+    user: root
+    volumes:
+      - config_namenode:/opt/hadoop/etc/hadoop
+      - config_worker:/opt/spark/conf     
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
+    depends_on:
+      - master
+    entrypoint: ["./entrypoint.sh", "history"]
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.5
 
 volumes:
   namenode:
@@ -87,6 +127,18 @@ volumes:
       o: bind
       type: none
       device: ./hadoop/config_datanode
+  config_master:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./spark/config_master
+  config_worker:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./spark/config_worker
 
 networks:
   hadoop_network:

@@ -4,3 +4,4 @@ if [ ! -d "/opt/hadoop/data/nameNode/current" ]; then
     hdfs namenode -format
 fi
 hdfs namenode
+# source /opt/hadoop/sbin/start_all.sh
