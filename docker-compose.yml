@@ -6,16 +6,17 @@ services:
     user: root
     environment:
       - HADOOP_HOME=/opt/hadoop
-      - HDFS_NAMENODE_USER=root
-      - HDFS_DATANODE_USER=root
-      - HDFS_SECONDARYNAMENODE_USER=root
-      - YARN_RESOURCEMANAGER_USER=root
-      - YARN_NODEMANAGER_USER=root
-      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      # - HDFS_NAMENODE_USER=root
+      # - HDFS_DATANODE_USER=root
+      # - HDFS_SECONDARYNAMENODE_USER=root
+      # - YARN_RESOURCEMANAGER_USER=root
+      # - YARN_NODEMANAGER_USER=root
+      # - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
     volumes:
       - namenode:/opt/hadoop/data/nameNode
       - config_namenode:/opt/hadoop/etc/hadoop
       - config_master:/opt/spark/conf
+      # - workspace:/workspace
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     ports:
       - "9870:9870" 
@@ -35,12 +36,12 @@ services:
     user: root
     environment:
       - HADOOP_HOME=/opt/hadoop
-      - HDFS_NAMENODE_USER=root
-      - HDFS_DATANODE_USER=root
-      - HDFS_SECONDARYNAMENODE_USER=root
-      - YARN_RESOURCEMANAGER_USER=root
-      - YARN_NODEMANAGER_USER=root
-      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      # - HDFS_NAMENODE_USER=root
+      # - HDFS_DATANODE_USER=root
+      # - HDFS_SECONDARYNAMENODE_USER=root
+      # - YARN_RESOURCEMANAGER_USER=root
+      # - YARN_NODEMANAGER_USER=root
+      # - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
     volumes:
       - datanode1:/opt/hadoop/data/dataNode
       - config_datanode:/opt/hadoop/etc/hadoop
@@ -61,16 +62,16 @@ services:
     user: root
     environment:
       - HADOOP_HOME=/opt/hadoop
-      - HDFS_NAMENODE_USER=root
-      - HDFS_DATANODE_USER=root
-      - HDFS_SECONDARYNAMENODE_USER=root
-      - YARN_RESOURCEMANAGER_USER=root
-      - YARN_NODEMANAGER_USER=root
-      - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+      # - HDFS_NAMENODE_USER=root
+      # - HDFS_DATANODE_USER=root
+      # - HDFS_SECONDARYNAMENODE_USER=root
+      # - YARN_RESOURCEMANAGER_USER=root
+      # - YARN_NODEMANAGER_USER=root
+      # - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
     volumes:
       - datanode2:/opt/hadoop/data/dataNode
       - config_datanode:/opt/hadoop/etc/hadoop
-      - config_worker:/opt/spark/conf     
+      - config_master:/opt/spark/conf     
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
       - master
@@ -84,9 +85,11 @@ services:
     container_name: history_server
     hostname: history_server
     user: root
+    ports:
+      - "18080:18080" 
     volumes:
       - config_namenode:/opt/hadoop/etc/hadoop
-      - config_worker:/opt/spark/conf     
+      - config_master:/opt/spark/conf 
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
       - master
@@ -94,6 +97,25 @@ services:
     networks:
       hadoop_network:
         ipv4_address: 172.20.0.5
+
+  client:
+    image: hadoop_base:1.0
+    container_name: client
+    hostname: client
+    user: root
+    volumes:
+      - config_namenode:/opt/hadoop/etc/hadoop
+      - config_master:/opt/spark/conf 
+      - workspace:/workspace    
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
+    depends_on:
+      - master
+      - worker1
+      - worker2
+    command: ["/entrypoint.sh", ""]
+    networks:
+      hadoop_network:
+        ipv4_address: 172.20.0.6
 
 volumes:
   namenode:
@@ -138,6 +160,12 @@ volumes:
       o: bind
       type: none
       device: ./spark/config_worker
+  workspace:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./spark/workspace
 
 networks:
   hadoop_network:

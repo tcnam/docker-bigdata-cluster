@@ -11,12 +11,12 @@ then
         echo "Formatting NameNode..."
         hdfs namenode -format
     fi
-    hdfs namenode&
-    hdfs secondarynamenode&
-    yarn resourcemanager
-    # hdfs start namenode
-    # hdfs start secondarynamenode
-    # yarn start resourcemanager
+    # hdfs namenode&
+    # hdfs secondarynamenode&
+    # yarn resourcemanager
+    hdfs --daemon start namenode
+    hdfs --daemon start secondarynamenode
+    yarn --daemon start resourcemanager
     # create required directories, but may fail so do it in a loop
     hdfs dfs -mkdir -p /spark_logs
     echo "Created /spark_logs hdfs dir"
@@ -31,19 +31,20 @@ then
     rm -rf /opt/hadoop/data/dataNode/*
     # chown -R hadoop:hadoop /opt/hadoop/data/dataNode
     chmod 755 /opt/hadoop/data/dataNode
-    hdfs datanode&
-    yarn nodemanager
-    # hdfs start datanode
-    # yarn start nodemanager
+    # hdfs datanode&
+    # yarn nodemanager
+    hdfs --daemon start datanode
+    yarn --daemon start nodemanager
 elif [ "$SPARK_WORKLOAD" == "history" ];
 then
-    # while ! hdfs dfs -test -d /spark_logs;
-    # do
-    # echo "spark_logs doesn't exist yet... retrying"
-    # sleep 1;
-    # done
-    # echo "Exit loop"
+    while ! hdfs dfs -test -d /spark_logs;
+    do
+    echo "spark_logs doesn't exist yet... retrying"
+    sleep 1;
+    done
+    echo "Exit loop"
 
     # start the spark history server
     start-history-server.sh
 fi
+tail -f /dev/null

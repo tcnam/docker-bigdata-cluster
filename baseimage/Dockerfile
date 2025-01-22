@@ -54,7 +54,9 @@ ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 # Add Hadoop native library path to the dynamic link library path
 ENV LD_LIBRARY_PATH="$HADOOP_HOME/lib/native:${LD_LIBRARY_PATH}"
 
-RUN mkdir -p $SPARK_HOME/spark_logs
+RUN mkdir -p $SPARK_HOME/spark_logs && \
+    mkdir -p /workspace
+
 
 # # Install Hive
 # ARG HIVE_VERSION=4.0.1
