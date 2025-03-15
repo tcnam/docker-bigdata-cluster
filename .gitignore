@@ -1,4 +1,4 @@
 /baseimage/files/
-/hadoop/datanode1/*
-/hadoop/datanode2/*
-/hadoop/namenode/*
+/hadoop/datanode1/
+/hadoop/datanode2/
+/hadoop/namenode/
