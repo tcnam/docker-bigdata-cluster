@@ -2,3 +2,5 @@
 /hadoop/datanode1/
 /hadoop/datanode2/
 /hadoop/namenode/
+/hadoop/resourcemanager/
+/hadoop/secondarynamenode/

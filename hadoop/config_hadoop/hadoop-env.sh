@@ -51,11 +51,11 @@
 
 # The java implementation to use. By default, this environment
 # variable is REQUIRED on ALL platforms except OS X!
-# export JAVA_HOME=
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 # Location of Hadoop.  By default, Hadoop will attempt to determine
 # this location based upon its execution path.
-# export HADOOP_HOME=
+export HADOOP_HOME=/opt/hadoop
 
 # Location of Hadoop's configuration information.  i.e., where this
 # file is living. If this is not defined, Hadoop will attempt to
@@ -65,21 +65,21 @@
 # /etc/profile.d or equivalent.  Some options (such as
 # --config) may react strangely otherwise.
 #
-# export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 
 # The maximum amount of heap to use (Java -Xmx).  If no unit
 # is provided, it will be converted to MB.  Daemons will
 # prefer any Xmx setting in their respective _OPT variable.
 # There is no default; the JVM will autoscale based upon machine
 # memory size.
-# export HADOOP_HEAPSIZE_MAX=
+export HADOOP_HEAPSIZE_MAX=500
 
 # The minimum amount of heap to use (Java -Xms).  If no unit
 # is provided, it will be converted to MB.  Daemons will
 # prefer any Xms setting in their respective _OPT variable.
 # There is no default; the JVM will autoscale based upon machine
 # memory size.
-# export HADOOP_HEAPSIZE_MIN=
+export HADOOP_HEAPSIZE_MIN=100
 
 # Enable extra debugging of Hadoop's JAAS binding, used to set up
 # Kerberos security.
@@ -184,7 +184,7 @@ export HADOOP_OS_TYPE=${HADOOP_OS_TYPE:-$(uname -s)}
 # Where (primarily) daemon log files are stored.
 # ${HADOOP_HOME}/logs by default.
 # Java property: hadoop.log.dir
-# export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
+export HADOOP_LOG_DIR=${HADOOP_HOME}/data/logs
 
 # A string representing this instance of hadoop. $USER by default.
 # This is used in writing log and pid files, so keep that in mind!

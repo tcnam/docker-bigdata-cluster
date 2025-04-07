@@ -4,34 +4,34 @@ NODE_TYPE=$1
 
 echo "NODE TYPE: $NODE_TYPE"
 
-if [ "$NODE_TYPE" == "master" ];
+if [ "$NODE_TYPE" == "namenode" ];
 then 
-    if [ ! -d "/opt/hadoop/data/nameNode/current" ]; 
+    sudo -u hdfs
+    if [ ! -d "/opt/hadoop/data/namenode/current" ]; 
     then
         echo "Formatting NameNode..."
         hdfs namenode -format
     fi
     hdfs --daemon start namenode
-    yarn --daemon start resourcemanager
     # create required directories, but may fail so do it in a loop
-    hdfs dfs -mkdir -p /spark_logs
-    echo "Created /spark_logs hdfs dir"
-    hdfs dfs -mkdir -p /opt/spark/data
-    echo "Created /opt/spark/data hdfs dir"
-
+elif [ "$NODE_TYPE" == "resourcemanager" ];
+then
+    sudo -u yarn
+    yarn --daemon start resourcemanager
 elif [ "$NODE_TYPE" == "worker" ];
 then 
-    rm -rf /opt/hadoop/data/dataNode/*
-    # chown -R hadoop:hadoop /opt/hadoop/data/dataNode
-    chmod 755 /opt/hadoop/data/dataNode
+    sudo -u hdfs
+    rm -rf /opt/hadoop/data/datanode/*
     hdfs --daemon start datanode
     yarn --daemon start nodemanager
 elif [ "$NODE_TYPE" == "livy" ];
 then 
     livy-server start
-elif [ "$NODE_TYPE" == "standby" ];
+elif [ "$NODE_TYPE" == "secondarynamenode" ];
 then
+    # su -u hdfs
     hdfs --daemon start secondarynamenode
+    # su -u yarn
     yarn --daemon start historyserver
 elif [ "$NODE_TYPE" == "history" ];
 then
