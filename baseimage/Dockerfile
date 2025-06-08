@@ -14,19 +14,15 @@ RUN apt-get update && \
     apt-get install -y netcat && \
     apt-get install -y gnupg && \
     apt-get install -y libsnappy-dev && \
-    apt-get install -y zip && \
-    apt-get install -y unzip && \
-    apt-get install -y sudo && \
     rm -rf /var/lib/apt/lists/*
 
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-COPY ./files/ /opt/
-
 # Install Hadoop
-ARG HADOOP_VERSION=3.3.6
+COPY ./files/ /opt/
+ARG HADOOP_VERSION=3.4.1
 RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     rm /opt/hadoop-${HADOOP_VERSION}.tar.gz
@@ -55,8 +51,7 @@ ENV SPARK_MASTER="spark://spark-yarn-master:7077"
 ENV SPARK_MASTER_HOST=master
 ENV SPARK_MASTER_HOST=7077
 ENV PYSPARK_PYTHON=python3
-ENV PYSPARK_PATH=/usr/bin/python3
-
+ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 
 # Add Hadoop native library path to the dynamic link library path
 ENV LD_LIBRARY_PATH="$HADOOP_HOME/lib/native:${LD_LIBRARY_PATH}"
@@ -73,19 +68,6 @@ RUN mkdir -p $SPARK_HOME/spark_logs && \
 # ENV HIVE_HOME=/opt/apache-hive-${HIVE_VERSION}-bin
 # ENV PATH=$HIVE_HOME/bin:$PATH
 
-# Install Livy
-# ARG LIVY_VERSION=0.8.0
-RUN unzip /opt/apache-livy-0.8.0-incubating_2.12-bin.zip -d /opt && \
-    mv /opt/apache-livy-0.8.0-incubating_2.12-bin /opt/livy && \
-    rm /opt/apache-livy-0.8.0-incubating_2.12-bin.zip
-ENV LIVY_HOME=/opt/livy
-ENV PATH=$LIVY_HOME/bin:$PATH
-
-ENV LIVY_LOG_DIR=/var/log/livy
-ENV LIVY_PID_DIR=/var/run/livy
-
-RUN mkdir -p $LIVY_LOG_DIR && \
-    mkdir -p $LIVY_PID_DIR
 
 
 # Install Python libraries

@@ -12,28 +12,31 @@ then
         echo "Formatting NameNode..."
         hdfs namenode -format
     fi
+    # hdfs namenode&
+    # hdfs secondarynamenode&
+    # yarn resourcemanager
     hdfs --daemon start namenode
-    # create required directories, but may fail so do it in a loop
-elif [ "$NODE_TYPE" == "resourcemanager" ];
-then
-    sudo -u yarn
+    hdfs --daemon start secondarynamenode
     yarn --daemon start resourcemanager
+    # create required directories, but may fail so do it in a loop
+    hdfs dfs -mkdir -p /spark_logs
+    echo "Created /spark_logs hdfs dir"
+    hdfs dfs -mkdir -p /opt/spark/data
+    echo "Created /opt/spark/data hdfs dir"
+
+    # # copy the data to the data HDFS directory
+    # hdfs dfs -copyFromLocal /opt/spark/data/* /opt/spark/data
+    # hdfs dfs -ls /opt/spark/data
 elif [ "$NODE_TYPE" == "worker" ];
 then 
-    sudo -u hdfs
-    rm -rf /opt/hadoop/data/datanode/*
+    rm -rf /opt/hadoop/data/dataNode/*
+    # chown -R hadoop:hadoop /opt/hadoop/data/dataNode
+    chmod 755 /opt/hadoop/data/dataNode
+    # hdfs datanode&
+    # yarn nodemanager
     hdfs --daemon start datanode
     yarn --daemon start nodemanager
-elif [ "$NODE_TYPE" == "livy" ];
-then 
-    livy-server start
-elif [ "$NODE_TYPE" == "secondarynamenode" ];
-then
-    # su -u hdfs
-    hdfs --daemon start secondarynamenode
-    # su -u yarn
-    yarn --daemon start historyserver
-elif [ "$NODE_TYPE" == "history" ];
+elif [ "$SPARK_WORKLOAD" == "history" ];
 then
     while ! hdfs dfs -test -d /spark_logs;
     do
