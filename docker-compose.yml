@@ -173,7 +173,7 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/resourcemanger
+      device: ./hadoop/resourcemanager
   secondarynamenode:
     driver: local
     driver_opts:
