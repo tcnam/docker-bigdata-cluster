@@ -19,7 +19,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Set JAVA_HOME environment variable
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+ARG ARCHITECTURE=amd64
+ENV ARCHITECTURE=$ARCHITECTURE
+
+RUN mv /usr/lib/jvm/java-8-openjdk-${$ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Setup user for hadoop cluster

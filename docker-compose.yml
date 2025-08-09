@@ -11,7 +11,7 @@ services:
     ports:
       # - "8020:8020"
       # - "9000:9000"
-      - "9870:9870"
+      - "9870:9870" # hdfs WebUI
     entrypoint: ["/entrypoint.sh", "namenode"]
     networks:
       hadoop_network:
