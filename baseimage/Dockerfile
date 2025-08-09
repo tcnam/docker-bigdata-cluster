@@ -39,11 +39,11 @@ RUN mkdir -p /var/data/hadoop/hdfs/dn
 RUN mkdir -p /var/data/hadoop/hdfs/logs
 
 RUN chmod 777 /var/data/hadoop/hdfs/logs
-RUN chown hdfs:hadoop /var/data/hadoop/hdfs
+RUN chown -R hdfs:hadoop /var/data/hadoop/hdfs
 
 RUN mkdir -p /var/data/hadoop/logs
 RUN chmod 755 /var/data/hadoop/logs
-RUN chown yarn:hadoop /var/data/hadoop/logs
+RUN chown -R yarn:hadoop /var/data/hadoop/logs
 
 #Setup Hadoop related environment variables
 ENV HDFS_NAMENODE_USER=hdfs

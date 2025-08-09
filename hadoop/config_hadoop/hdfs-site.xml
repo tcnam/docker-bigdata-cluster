@@ -9,7 +9,7 @@
     </property>
     <property>
             <name>dfs.datanode.data.dir</name>
-            <value>file:/var/data/hadoop/hdfs/logs</value>
+            <value>file:/var/data/hadoop/hdfs/dn</value>
     </property>
     <property>
             <name>fs.checkpoint.edits.dir</name>
