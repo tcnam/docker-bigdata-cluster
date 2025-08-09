@@ -22,7 +22,7 @@ RUN apt-get update && \
 ARG ARCHITECTURE=amd64
 ENV ARCHITECTURE=$ARCHITECTURE
 
-RUN mv /usr/lib/jvm/java-8-openjdk-${$ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
+RUN mv /usr/lib/jvm/java-8-openjdk-${ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 ENV PATH=$JAVA_HOME/bin:$PATH
 
