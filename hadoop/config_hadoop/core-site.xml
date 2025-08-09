@@ -1,15 +1,7 @@
 <configuration>
-    <!-- <property>
+    <property>
         <name>fs.defaultFS</name>
         <value>hdfs://namenode:8020</value>
-    </property> -->
-    <property>
-            <name>fs.default.name</name>
-            <value>hdfs://namenode:9000</value>
-    </property>
-    <property>
-        <name>hadoop.tmp.dir</name>
-        <value>/opt/hadoop/data/tmp</value>
     </property>
     <property>
         <name>hadoop.http.staticuser.user</name>

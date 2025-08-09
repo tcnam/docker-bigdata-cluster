@@ -1,6 +1,9 @@
 /baseimage/files/
-/hadoop/datanode1/
-/hadoop/datanode2/
-/hadoop/namenode/
-/hadoop/resourcemanager/
-/hadoop/secondarynamenode/
+/hadoop/nn/
+/hadoop/snn/
+/hadoop/worker1/
+/hadoop/worker2/
+/hadoop/worker3/
+yarn/
+.DS_Store
+baseimage/.DS_Store

@@ -4,48 +4,29 @@ NODE_TYPE=$1
 
 echo "NODE TYPE: $NODE_TYPE"
 
-if [ "$NODE_TYPE" == "namenode" ];
-then 
-    sudo -u hdfs
-    if [ ! -d "/opt/hadoop/data/namenode/current" ]; 
-    then
+if [ "$NODE_TYPE" == "namenode" ]; then 
+    if [ ! -d "/var/data/hadoop/hdfs/nn/current" ]; then
         echo "Formatting NameNode..."
-        hdfs namenode -format
+        su - hdfs -c "hdfs namenode -format"
     fi
-    # hdfs namenode&
-    # hdfs secondarynamenode&
-    # yarn resourcemanager
-    hdfs --daemon start namenode
-    hdfs --daemon start secondarynamenode
-    yarn --daemon start resourcemanager
-    # create required directories, but may fail so do it in a loop
-    hdfs dfs -mkdir -p /spark_logs
-    echo "Created /spark_logs hdfs dir"
-    hdfs dfs -mkdir -p /opt/spark/data
-    echo "Created /opt/spark/data hdfs dir"
+    su - hdfs -c "hdfs --daemon start namenode"
 
-    # # copy the data to the data HDFS directory
-    # hdfs dfs -copyFromLocal /opt/spark/data/* /opt/spark/data
-    # hdfs dfs -ls /opt/spark/data
-elif [ "$NODE_TYPE" == "worker" ];
-then 
-    rm -rf /opt/hadoop/data/dataNode/*
-    # chown -R hadoop:hadoop /opt/hadoop/data/dataNode
-    chmod 755 /opt/hadoop/data/dataNode
-    # hdfs datanode&
-    # yarn nodemanager
-    hdfs --daemon start datanode
-    yarn --daemon start nodemanager
-elif [ "$SPARK_WORKLOAD" == "history" ];
-then
-    while ! hdfs dfs -test -d /spark_logs;
-    do
-    echo "spark_logs doesn't exist yet... retrying"
-    sleep 1;
-    done
-    echo "Exit loop"
+elif [ "$NODE_TYPE" == "secondarynamenode" ]; then
+    su - hdfs -c "hdfs --daemon start secondarynamenode"
 
-    # start the spark history server
-    start-history-server.sh
+elif [ "$NODE_TYPE" == "resourcemanager" ]; then
+    su - yarn -c "yarn --daemon start resourcemanager"
+
+elif [ "$NODE_TYPE" == "worker" ]; then 
+    su - hdfs -c "hdfs --daemon start datanode"
+    su - yarn -c "yarn --daemon start nodemanager"
+
+elif [ "$NODE_TYPE" == "historyserver" ]; then
+    su - yarn -c "mapred --daemon start historyserver"
+
+else
+    echo "Unknown NODE_TYPE: $NODE_TYPE"
+    exit 1
 fi
+
 tail -f /dev/null

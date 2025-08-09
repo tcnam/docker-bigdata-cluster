@@ -5,19 +5,17 @@ services:
     hostname: namenode
     user: root
     volumes:
-      - namenode:/opt/hadoop/data/namenode
+      - namenode:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     ports:
-      - "9870:9870" 
-      - "8088:8088"
-      - "7077:7077"
-      - "9000:9000"
-    # command: [ "/bin/bash", "/start-hdfs.sh" ]
-    entrypoint: ["/entrypoint.sh", "master"]
+      # - "8020:8020"
+      # - "9000:9000"
+      - "9870:9870"
+    entrypoint: ["/entrypoint.sh", "namenode"]
     networks:
       hadoop_network:
-        ipv4_address: 172.20.0.2
+        ipv4_address: ${namenode_ip}
   
   resourcemanager:
     image: hadoop_base:1.0
@@ -25,7 +23,7 @@ services:
     hostname: resourcemanager
     user: root
     volumes:
-      - resourcemanger:/opt/hadoop/yarn/logs
+      - resourcemanger:/var/data/hadoop/logs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     ports:
@@ -33,64 +31,34 @@ services:
     entrypoint: ["/entrypoint.sh", "resourcemanager"]
     networks:
       hadoop_network:
-        ipv4_address: 172.20.0.3
+        ipv4_address: ${resourcemanager_ip}
   secondarynamenode:
     image: hadoop_base:1.0
     container_name: secondarynamenode
     hostname: secondarynamenode
     user: root
     volumes:
-      - secondarynamenode:/opt/hadoop/data/secondarynamenode
+      - secondarynamenode:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - ./hadoop/entrypoint.sh:/entrypoint.sh
-    ports:
-      - "50090:50090" #secondary namenode metadata service
+    # ports:
+    #   - "50090:50090" #secondary namenode metadata service
     entrypoint: ["/entrypoint.sh", "secondarynamenode"]
     networks:
       hadoop_network:
-        ipv4_address: 172.20.0.4
-  # master:
-  #   image: hadoop_base:1.0
-  #   container_name: master
-  #   hostname: master
-  #   user: root
-  #   environment:
-  #     - HADOOP_HOME=/opt/hadoop
-  #     # - HDFS_NAMENODE_USER=root
-  #     # - HDFS_DATANODE_USER=root
-  #     # - HDFS_SECONDARYNAMENODE_USER=root
-  #     # - YARN_RESOURCEMANAGER_USER=root
-  #     # - YARN_NODEMANAGER_USER=root
-  #     # - HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
-  #   volumes:
-  #     - namenode:/opt/hadoop/data/nameNode
-  #     - config_namenode:/opt/hadoop/etc/hadoop
-  #     - config_master:/opt/spark/conf
-  #     # - workspace:/workspace
-  #     - ./hadoop/entrypoint.sh:/entrypoint.sh
-  #   ports:
-  #     # - "8032:8032"
-  #     - "9870:9870" 
-  #     - "8088:8088"
-  #     - "7077:7077"
-  #     - "9000:9000"
-  #   # command: [ "/bin/bash", "/start-hdfs.sh" ]
-  #   entrypoint: ["/entrypoint.sh", "master"]
-  #   networks:
-  #     hadoop_network:
-  #       ipv4_address: 172.20.0.2
+        ipv4_address: ${secondarynamenode_ip}
 
   worker1:
     image: hadoop_base:1.0
     container_name: worker1
     hostname: worker1
     user: root
-    environment:
-      - HADOOP_HOME=/opt/hadoop
+    # environment:
+    #   - HADOOP_HOME=/opt/hadoop
     volumes:
-      - datanode1:/opt/hadoop/data/dataNode
+      - worker1:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_worker:/opt/spark/conf
+      # - config_worker:/opt/spark/conf
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -99,19 +67,19 @@ services:
     entrypoint: ["/entrypoint.sh", "worker"]
     networks:
       hadoop_network:
-        ipv4_address: 172.20.0.5
+        ipv4_address: ${worker1_ip}
 
   worker2:
     image: hadoop_base:1.0
     container_name: worker2
     hostname: worker2
     user: root
-    environment:
-      - HADOOP_HOME=/opt/hadoop
+    # environment:
+    #   - HADOOP_HOME=/opt/hadoop
     volumes:
-      - datanode2:/opt/hadoop/data/dataNode
+      - worker2:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_master:/opt/spark/conf     
+      # - config_worker:/opt/spark/conf
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -120,44 +88,64 @@ services:
     entrypoint: ["/entrypoint.sh", "worker"]
     networks:
       hadoop_network:
-        ipv4_address: 172.20.0.4
-  
-  history_server:
-    image: hadoop_base:1.0
-    container_name: history_server
-    hostname: history_server
-    user: root
-    ports:
-      - "18080:18080" 
-    volumes:
-      - config_namenode:/opt/hadoop/etc/hadoop
-      - config_master:/opt/spark/conf 
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
-    depends_on:
-      - master
-    entrypoint: ["/entrypoint.sh", "history"]
-    networks:
-      hadoop_network:
-        ipv4_address: 172.20.0.5
+        ipv4_address: ${worker2_ip}
 
-  client:
+  worker3:
     image: hadoop_base:1.0
-    container_name: client
-    hostname: client
+    container_name: worker3
+    hostname: worker3
     user: root
+    # environment:
+    #   - HADOOP_HOME=/opt/hadoop
     volumes:
-      - config_namenode:/opt/hadoop/etc/hadoop
-      - config_master:/opt/spark/conf 
-      - workspace:/workspace    
+      - worker3:/var/data/hadoop/hdfs
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      # - config_worker:/opt/spark/conf
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
-      - master
-      - worker1
-      - worker2
-    command: ["/entrypoint.sh", ""]
+      - namenode
+      - resourcemanager
+      # - secondarynamenode
+    entrypoint: ["/entrypoint.sh", "worker"]
     networks:
       hadoop_network:
-        ipv4_address: 172.20.0.6
+        ipv4_address: ${worker3_ip}
+  
+  historyserver:
+    image: hadoop_base:1.0
+    container_name: historyserver
+    hostname: historyserver
+    user: root
+    # ports:
+    #   - "18080:18080" 
+    volumes:
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
+    depends_on:
+      - namenode
+    entrypoint: ["/entrypoint.sh", "historyserver"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${historyserver_ip}
+
+  # edgenode:
+  #   image: hadoop_base:1.0
+  #   container_name: edgenode
+  #   hostname: edgenode
+  #   user: root
+  #   volumes:
+  #     - config_hadoop:/opt/hadoop/etc/hadoop
+  #     - config_master:/opt/spark/conf 
+  #     - workspace:/workspace    
+  #     - ./hadoop/entrypoint.sh:/entrypoint.sh
+  #   depends_on:
+  #     - master
+  #     - worker1
+  #     - worker2
+  #   command: ["/entrypoint.sh", ""]
+  #   networks:
+  #     hadoop_network:
+  #       ipv4_address: ${edgenode_ip}
 
 volumes:
   namenode:
@@ -165,43 +153,43 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/namenode
-  datanode1:
+      device: ./hadoop/nn
+  secondarynamenode:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/datanode1
-  datanode2:
+      device: ./hadoop/snn
+  resourcemanger:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/datanode2
+      device: ./yarn/logs
+  worker1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./hadoop/worker1
+  worker2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./hadoop/worker2
+  worker3:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./hadoop/worker3
   config_hadoop:
     driver: local
     driver_opts:
       o: bind
       type: none
       device: ./hadoop/config_hadoop
-  config_master:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./spark/config_master
-  config_worker:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./spark/config_worker
-  workspace:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./spark/workspace
 
 networks:
   hadoop_network:
