@@ -23,7 +23,7 @@ services:
     hostname: resourcemanager
     user: root
     volumes:
-      - resourcemanger:/var/data/hadoop/logs
+      - resourcemanager:/var/data/hadoop/yarn
       - config_hadoop:/opt/hadoop/etc/hadoop
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     ports:
@@ -74,12 +74,9 @@ services:
     container_name: worker2
     hostname: worker2
     user: root
-    # environment:
-    #   - HADOOP_HOME=/opt/hadoop
     volumes:
       - worker2:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
-      # - config_worker:/opt/spark/conf
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -153,19 +150,19 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/nn
+      device: ./hadoop/namenode
   secondarynamenode:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/snn
-  resourcemanger:
+      device: ./hadoop/secondarynamenode
+  resourcemanager:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./yarn/logs
+      device: ./hadoop/resourcemanager
   worker1:
     driver: local
     driver_opts:

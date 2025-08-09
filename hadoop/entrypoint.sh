@@ -16,10 +16,12 @@ elif [ "$NODE_TYPE" == "secondarynamenode" ]; then
 
 elif [ "$NODE_TYPE" == "resourcemanager" ]; then
     su - yarn -c "yarn --daemon start resourcemanager"
+    su - spark -c "start-master.sh"
 
 elif [ "$NODE_TYPE" == "worker" ]; then 
     su - hdfs -c "hdfs --daemon start datanode"
     su - yarn -c "yarn --daemon start nodemanager"
+    su - spark -c "start-worker.sh"
 
 elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - yarn -c "mapred --daemon start historyserver"

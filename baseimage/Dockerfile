@@ -31,6 +31,7 @@ RUN groupadd hadoop
 RUN useradd -g hadoop yarn
 RUN useradd -g hadoop hdfs
 RUN useradd -g hadoop mapred
+RUN useradd -g hadoop spark
 
 # Create necessary dir
 RUN mkdir -p /var/data/hadoop/hdfs/nn
@@ -61,9 +62,22 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
 ENV HADOOP_HOME=/opt/hadoop
 ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
+
+# Install Spark
+ARG SPARK_VERSION=3.2.4
+RUN tar -zxvf /opt/spark-${SPARK_VERSION}.tgz -C /opt && \
+    mv /opt/spark-${SPARK_VERSION}-bin-without-hadoop /opt/spark && \
+    rm /opt/spark-${SPARK_VERSION}.tgz
+
+ENV SPARK_HOME=/opt/spark
+ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
+ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
+
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
-    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH' >> /etc/profile
+    echo 'export SPARK_HOME=/opt/spark' >> /etc/profile && \
+    echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
+    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH' >> /etc/profile
 
 
 # Install Python libraries
