@@ -51,7 +51,7 @@ ENV YARN_RESOURCEMANAGER_USER=yarn
 ENV YARN_NODEMANAGER_USER=yarn
 
 # Install Hadoop
-COPY ./files/ /opt/
+COPY baseimage/files/ /opt/
 ARG HADOOP_VERSION=3.2.0
 RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
