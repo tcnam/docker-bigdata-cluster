@@ -19,9 +19,19 @@ RUN apt-get update && \
 ARG ARCHITECTURE=amd64
 ENV ARCHITECTURE=$ARCHITECTURE
 
+COPY baseimage/files/ /opt/
+
 RUN mv /usr/lib/jvm/java-8-openjdk-${ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 ENV PATH=$JAVA_HOME/bin:$PATH
+
+
+ARG SCALA_VERSION=2.12.10
+RUN tar -zxvf /opt/scala-${SCALA_VERSION}.tgz -C /opt && \
+    mv /opt/scala-${SCALA_VERSION} /usr/lib/scala && \
+    rm /opt/scala-${SCALA_VERSION}.tgz
+ENV SCALA_HOME=/usr/lib/scala
+ENV PATH=$SCALA_HOME/bin:$PATH
 
 # Setup user for hadoop cluster
 RUN groupadd hadoop
@@ -51,7 +61,6 @@ ENV YARN_RESOURCEMANAGER_USER=yarn
 ENV YARN_NODEMANAGER_USER=yarn
 
 # Install Hadoop
-COPY baseimage/files/ /opt/
 ARG HADOOP_VERSION=3.2.0
 RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
@@ -73,6 +82,8 @@ ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
     echo 'export SPARK_HOME=/opt/spark' >> /etc/profile && \
+    echo 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk' >> /etc/profile && \
+    echo 'export SCALA_HOME=/usr/lib/scala' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH' >> /etc/profile
 

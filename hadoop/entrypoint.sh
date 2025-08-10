@@ -26,7 +26,8 @@ elif [ "$NODE_TYPE" == "worker" ]; then
 elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - yarn -c "mapred --daemon start historyserver"
 elif [ "$NODE_TYPE" == "edgenode" ]; then
-    su - root -c "tail -f /dev/null"
+    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
+    su - root -c "tail -f /dev/null"  
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
     exit 1
