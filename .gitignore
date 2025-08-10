@@ -1,6 +1,7 @@
 /baseimage/files/
-/hadoop/nn/
-/hadoop/snn/
+/hadoop/namenode/
+/hadoop/secondarynamenode/
+/hadoop/resourcemanager/
 /hadoop/worker1/
 /hadoop/worker2/
 /hadoop/worker3/

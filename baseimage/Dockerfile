@@ -9,9 +9,6 @@ RUN apt-get update && \
     apt-get install -y openjdk-8-jre && \
     apt-get install -y wget && \
     apt-get install -y curl && \
-    # apt-get install -y python3 && \
-    # apt-get install -y python3-dev && \
-    # apt-get install -y python3-pip && \
     apt-get install -y net-tools && \
     apt-get install -y netcat && \
     apt-get install -y gnupg && \
@@ -39,12 +36,12 @@ RUN mkdir -p /var/data/hadoop/hdfs/snn
 RUN mkdir -p /var/data/hadoop/hdfs/dn
 RUN mkdir -p /var/data/hadoop/hdfs/logs
 
-RUN chmod 777 /var/data/hadoop/hdfs/logs
+RUN chmod 775 /var/data/hadoop/hdfs/logs
 RUN chown -R hdfs:hadoop /var/data/hadoop/hdfs
 
-RUN mkdir -p /var/data/hadoop/logs
-RUN chmod 755 /var/data/hadoop/logs
-RUN chown -R yarn:hadoop /var/data/hadoop/logs
+# RUN mkdir -p /var/data/hadoop/logs
+# RUN chmod 755 /var/data/hadoop/logs
+# RUN chown -R yarn:hadoop /var/data/hadoop/logs
 
 #Setup Hadoop related environment variables
 ENV HDFS_NAMENODE_USER=hdfs
@@ -79,6 +76,9 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH' >> /etc/profile
 
+
+# Setup for edge node
+RUN mkdir /workspace
 
 # Install Python libraries
 # COPY ./requirements.txt /requirements.txt
