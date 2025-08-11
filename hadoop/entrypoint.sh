@@ -16,18 +16,17 @@ elif [ "$NODE_TYPE" == "secondarynamenode" ]; then
 
 elif [ "$NODE_TYPE" == "resourcemanager" ]; then
     su - yarn -c "yarn --daemon start resourcemanager"
-    # su - spark -c "start-master.sh"
 
 elif [ "$NODE_TYPE" == "worker" ]; then 
     su - hdfs -c "hdfs --daemon start datanode"
     su - yarn -c "yarn --daemon start nodemanager"
-    # su - spark -c "start-worker.sh"
 
 elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - yarn -c "mapred --daemon start historyserver"
+    su - root -c "start-history-server.sh"
 elif [ "$NODE_TYPE" == "edgenode" ]; then
     su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
-    su - root -c "tail -f /dev/null"  
+    tail -f /dev/null
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
     exit 1

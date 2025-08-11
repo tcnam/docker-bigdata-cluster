@@ -5,6 +5,7 @@
 /hadoop/worker1/
 /hadoop/worker2/
 /hadoop/worker3/
+/hadoop/historyserver/
 yarn/
 .DS_Store
 baseimage/.DS_Store

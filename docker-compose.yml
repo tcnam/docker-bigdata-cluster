@@ -117,14 +117,22 @@ services:
     container_name: historyserver
     hostname: historyserver
     user: root
-    # ports:
-    #   - "18080:18080" 
+    ports:
+      - "18080:18080" #Spark History Server UI
+      - "19888:19888" #Mapreduce History Server UI
     volumes:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - historyserver:/opt/spark/logs
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
+      - secondarynamenode
+      - resourcemanager
+      - worker1
+      - worker2
+      - worker3
+      - edgenode
     entrypoint: ["/entrypoint.sh", "historyserver"]
     networks:
       hadoop_network:
@@ -144,7 +152,6 @@ services:
       - namenode
       - secondarynamenode
       - resourcemanager
-      - historyserver
       - worker1
       - worker2
       - worker3
@@ -172,6 +179,12 @@ volumes:
       o: bind
       type: none
       device: ./hadoop/resourcemanager
+  historyserver:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./hadoop/historyserver
   worker1:
     driver: local
     driver_opts:
