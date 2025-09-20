@@ -41,7 +41,7 @@ RUN groupadd hadoop
 RUN useradd -g hadoop yarn
 RUN useradd -g hadoop hdfs
 RUN useradd -g hadoop mapred
-# RUN useradd -g hadoop spark
+RUN useradd -g hadoop spark
 
 # Create necessary dir
 RUN mkdir -p /var/data/hadoop/hdfs/nn

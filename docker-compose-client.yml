@@ -3,7 +3,7 @@ services:
     image: hadoop_base:1.0
     container_name: edgenode
     hostname: edgenode
-    user: root
+    user: spark
     volumes:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 

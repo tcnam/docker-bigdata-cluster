@@ -24,6 +24,8 @@ elif [ "$NODE_TYPE" == "worker" ]; then
 elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - yarn -c "mapred --daemon start historyserver"
     su - root -c "start-history-server.sh"
+    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
+    su - hdfs -c "hdfs dfs -chown -R spark:hadoop /spark/logs"
 elif [ "$NODE_TYPE" == "edgenode" ]; then
     su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
     tail -f /dev/null
