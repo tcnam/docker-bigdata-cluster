@@ -1,0 +1,32 @@
+services:
+  edgenode:
+    image: hadoop_base:1.0
+    container_name: edgenode
+    hostname: edgenode
+    user: root
+    volumes:
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf 
+      - workspace:/workspace    
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
+    command: ["/entrypoint.sh", "edgenode"]
+
+volumes:
+  config_hadoop:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./edge/config_hadoop
+  config_spark:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./edge/config_spark
+  workspace:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./edge/workspace

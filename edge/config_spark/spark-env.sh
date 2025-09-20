@@ -79,7 +79,7 @@
 # Options for beeline
 # - SPARK_BEELINE_OPTS, to set config properties only for the beeline cli (e.g. "-Dx=y")
 # - SPARK_BEELINE_MEMORY, Memory for beeline (e.g. 1000M, 2G) (Default: 1G)
-export SPARK_MASTER_HOST=resourcemanager
+export SPARK_MASTER_HOST=100.84.28.115
 
 export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 export YARN_CONF_DIR=${HADOOP_HOME}/etc/hadoop
