@@ -133,33 +133,36 @@ services:
       - worker1
       - worker2
       - worker3
-      # - edgenode
     entrypoint: ["/entrypoint.sh", "historyserver"]
     networks:
       hadoop_network:
         ipv4_address: ${historyserver_ip}
 
-  # edgenode:
-  #   image: hadoop_base:1.0
-  #   container_name: edgenode
-  #   hostname: edgenode
-  #   user: root
-  #   volumes:
-  #     - config_hadoop:/opt/hadoop/etc/hadoop
-  #     - config_spark:/opt/spark/conf 
-  #     - workspace:/workspace    
-  #     - ./hadoop/entrypoint.sh:/entrypoint.sh
-  #   depends_on:
-  #     - namenode
-  #     - secondarynamenode
-  #     - resourcemanager
-  #     - worker1
-  #     - worker2
-  #     - worker3
-  #   command: ["/entrypoint.sh", "edgenode"]
-  #   networks:
-  #     hadoop_network:
-  #       ipv4_address: ${edgenode_ip}
+  edgenode:
+    image: hadoop_base:1.0
+    container_name: edgenode
+    hostname: edgenode
+    user: spark
+    volumes:
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf 
+      - workspace:/workspace    
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
+    depends_on:
+      - namenode
+      - secondarynamenode
+      - resourcemanager
+      - worker1
+      - worker2
+      - worker3
+      - historyserver
+    ports:
+      # - "2222:22"
+      - "4040:4040"
+    command: ["/entrypoint.sh", "edgenode"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${edgenode_ip}
 
 volumes:
   namenode:

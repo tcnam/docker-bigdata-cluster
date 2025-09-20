@@ -1,7 +1,7 @@
 <configuration>
     <property>
             <name>fs.default.name</name>
-            <value>hdfs://100.84.28.115:9000</value>
+            <value>hdfs://namenode:9000</value>
     </property>
     <property>
             <name>dfs.namenode.name.dir</name>

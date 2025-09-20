@@ -37,7 +37,6 @@ elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - hdfs -c "hdfs dfs -mkdir -p /user/mapred"
     su - hdfs -c "hdfs dfs -chown mapred:supergroup /user/mapred"
 elif [ "$NODE_TYPE" == "edgenode" ]; then
-    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
     tail -f /dev/null
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
