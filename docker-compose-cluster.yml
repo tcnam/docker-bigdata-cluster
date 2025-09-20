@@ -30,6 +30,7 @@ services:
       - ./hadoop/entrypoint.sh:/entrypoint.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
+      - "8032:8032" #Resource Manager WebUI
     entrypoint: ["/entrypoint.sh", "resourcemanager"]
     networks:
       hadoop_network:
