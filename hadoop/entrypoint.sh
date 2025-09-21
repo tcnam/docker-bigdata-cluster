@@ -10,6 +10,30 @@ if [ "$NODE_TYPE" == "namenode" ]; then
         su - hdfs -c "hdfs namenode -format"
     fi
     su - hdfs -c "hdfs --daemon start namenode"
+    # check if hdfs leave safemode or not
+    until su - hdfs -c "hdfs dfsadmin -safemode get | grep -q 'OFF'"; do
+        echo "Waiting for HDFS to leave safe mode..."
+    done
+
+    echo "HDFS to leave safe mode, start creating folders"
+
+    # create folders in hdfs after leaving safe mode
+    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
+    su - hdfs -c "hdfs dfs -mkdir -p /spark/jars"
+    su - hdfs -c "hdfs dfs -put -f $SPARK_HOME/jars/* /spark/jars"
+    # su - hdfs -c "hdfs dfs -chmod 775 /spark"
+    su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark"
+
+    su - hdfs -c "hdfs dfs -mkdir -p /user/spark"
+    su - hdfs -c "hdfs dfs -chown spark:supergroup /user/spark"
+
+    su - hdfs -c "hdfs dfs -mkdir -p /user/yarn"
+    su - hdfs -c "hdfs dfs -chown yarn:supergroup /user/yarn"
+
+    su - hdfs -c "hdfs dfs -mkdir -p /user/mapred"
+    su - hdfs -c "hdfs dfs -chown mapred:supergroup /user/mapred"
+
+    echo "Finish creating folders"
 
 elif [ "$NODE_TYPE" == "secondarynamenode" ]; then
     su - hdfs -c "hdfs --daemon start secondarynamenode"
@@ -25,17 +49,6 @@ elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - yarn -c "mapred --daemon start historyserver"
     su - root -c "start-history-server.sh"
 
-    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
-    su - hdfs -c "hdfs dfs -chown -R spark:hadoop /spark/logs"
-
-    su - hdfs -c "hdfs dfs -mkdir -p /user/spark"
-    su - hdfs -c "hdfs dfs -chown spark:supergroup /user/spark"
-
-    su - hdfs -c "hdfs dfs -mkdir -p /user/yarn"
-    su - hdfs -c "hdfs dfs -chown yarn:supergroup /user/yarn"
-
-    su - hdfs -c "hdfs dfs -mkdir -p /user/mapred"
-    su - hdfs -c "hdfs dfs -chown mapred:supergroup /user/mapred"
 elif [ "$NODE_TYPE" == "edgenode" ]; then
     tail -f /dev/null
 else
