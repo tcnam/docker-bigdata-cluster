@@ -8,7 +8,7 @@ services:
       - namenode:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       # - "8020:8020"
       - "9000:9000"
@@ -27,7 +27,7 @@ services:
       - resourcemanager:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
       - "8032:8032" #Resource Manager WebUI
@@ -44,7 +44,7 @@ services:
       - secondarynamenode:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
     entrypoint: ["/entrypoint.sh", "secondarynamenode"]
@@ -57,17 +57,15 @@ services:
     container_name: worker1
     hostname: worker1
     user: root
-    # environment:
-    #   - HADOOP_HOME=/opt/hadoop
     volumes:
       - worker1:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
       - resourcemanager
-      # - secondarynamenode
+      - secondarynamenode
     entrypoint: ["/entrypoint.sh", "worker"]
     networks:
       hadoop_network:
@@ -82,11 +80,11 @@ services:
       - worker2:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
       - resourcemanager
-      # - secondarynamenode
+      - secondarynamenode
     entrypoint: ["/entrypoint.sh", "worker"]
     networks:
       hadoop_network:
@@ -97,17 +95,15 @@ services:
     container_name: worker3
     hostname: worker3
     user: root
-    # environment:
-    #   - HADOOP_HOME=/opt/hadoop
     volumes:
       - worker3:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
       - resourcemanager
-      # - secondarynamenode
+      - secondarynamenode
     entrypoint: ["/entrypoint.sh", "worker"]
     networks:
       hadoop_network:
@@ -125,7 +121,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - historyserver:/opt/spark/logs
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
       - secondarynamenode
@@ -163,7 +159,7 @@ services:
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
       - hiveserver2:/var/data/hadoop/hive/tmp
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
       - secondarynamenode
@@ -190,7 +186,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
       - workspace:/workspace    
-      - ./hadoop/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
       - secondarynamenode
@@ -213,55 +209,55 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/namenode
+      device: ./services/namenode
   secondarynamenode:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/secondarynamenode
+      device: ./services/secondarynamenode
   resourcemanager:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/resourcemanager
+      device: ./services/resourcemanager
   historyserver:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/historyserver
+      device: ./services/historyserver
   worker1:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/worker1
+      device: ./services/worker1
   worker2:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/worker2
+      device: ./services/worker2
   worker3:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/worker3
+      device: ./services/worker3
   metastore:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/metastore
+      device: ./services/metastore
   hiveserver2:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/hiveserver2
+      device: ./services/hiveserver2
   workspace:
     driver: local
     driver_opts:
@@ -273,19 +269,19 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./hadoop/config_hadoop
+      device: ./conf/hadoop
   config_spark:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./edge/config_spark
+      device: ./conf/spark
   config_hive:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./edge/config_hive
+      device: ./conf/hive
 
 networks:
   hadoop_network:

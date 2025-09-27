@@ -38,7 +38,13 @@ if [ "$NODE_TYPE" == "namenode" ]; then
     # Create dir for spark
     su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
     su - hdfs -c "hdfs dfs -mkdir -p /spark/jars"
-    su - hdfs -c "hdfs dfs -put -f $SPARK_HOME/jars/* /spark/jars"
+    # Check if the /spark/jars exists and is not empty
+    if [ $(hdfs dfs -count /spark/jars | awk '{print $2}') -gt 0 ]; then
+        echo "HDFS directory /spark/jars is either empty or does not exist. Not performing put."
+    else
+        echo "HDFS directory /spark/jars exists and is not empty. Proceeding with put."
+        su - hdfs -c "hdfs dfs -put $SPARK_HOME/jars/* /spark/jars"
+    fi
     # su - hdfs -c "hdfs dfs -chmod 775 /spark"
     su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark"
     su - hdfs -c "hdfs dfs -mkdir -p /user/spark"

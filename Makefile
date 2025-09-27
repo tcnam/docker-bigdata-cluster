@@ -1,9 +1,3 @@
-create_dir:
-	mkdir .\hadoop\namenode .\hadoop\secondarynamenode .\hadoop\resourcemanager .\hadoop\worker1 .\hadoop\worker2 .\hadoop\worker3 .\hadoop\historyserver 
-
-delete_dir:
-	del -r ./hadoop/namenode ./hadoop/secondarynamenode ./hadoop/resourcemanager ./hadoop/worker1 ./hadoop/worker2 ./hadoop/worker3 ./hadoop/historyserver
-
 gen_jks:
 	keytool -genkeypair \
 		-alias hiveserver2 \
@@ -26,6 +20,9 @@ rebuild_image:
 
 start_cluster:
 	docker compose -f docker-compose-cluster.yml -p cluster up
+
+start_cluster_d:
+	docker compose -f docker-compose-cluster.yml -p cluster up -d
 
 stop_cluster:
 	docker compose -p cluster down -v
