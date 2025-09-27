@@ -3,9 +3,20 @@ create_dir:
 
 delete_dir:
 	del -r ./hadoop/namenode ./hadoop/secondarynamenode ./hadoop/resourcemanager ./hadoop/worker1 ./hadoop/worker2 ./hadoop/worker3 ./hadoop/historyserver
-
+	
 gen_jks:
-	keytool -genkeypair -alias hiveserver2 -keyalg RSA -storetype JKS -keysize 2048 -validity 365 -keystore .\edge\config_hive\hiveserver2.jks -dname "CN=hive.local, OU=Data, O=MyOrg, L=HCM, ST=VN, C=VN" -storepass hiveserver2 -keypass hiveserver2  
+	keytool -genkeypair \
+		-alias hiveserver2 \
+		-keyalg RSA \
+		-storetype JKS \
+		-keysize 2048 \
+		-validity 365 \
+		-keystore ./edge/config_hive/hiveserver2.jks \
+		-storepass hiveserver2 \
+		-keypass hiveserver2 \
+		-ext SAN=IP:100.84.28.115,DNS:hiveserver2 \
+		-dname "CN=hive.local, OU=Data, O=MyOrg, L=HCM, ST=VN, C=VN"
+
 
 rebuild_new_image:
 	docker image rm hadoop_base:1.0
