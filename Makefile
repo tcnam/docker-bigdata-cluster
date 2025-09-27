@@ -12,7 +12,7 @@ rebuild_image:
 	docker buildx build --file ./baseimage/Dockerfile --no-cache --platform linux/amd64 --build-arg ARCHITECTURE=amd64 -t hadoop_base:1.0 .
 
 start_cluster:
-	docker compose -f docker-compose-cluster.yml -p cluster up 
+	docker compose -f docker-compose-cluster.yml -p cluster up
 
 stop_cluster:
 	docker compose -p cluster down -v
