@@ -29,10 +29,8 @@ if [ "$NODE_TYPE" == "namenode" ]; then
     su - hdfs -c "hdfs dfs -chown -R mapred:supergroup /user/mapred"
 
     # Create dir for HIVE
-    su - hdfs -c "hdfs dfs -mkdir -p /tmp"
-    su - hdfs -c "hdfs dfs -chmod a+w /tmp"
-    su - hdfs -c "hdfs dfs -chown -R hive:supergroup /tmp"
-
+    su - hdfs -c "hdfs dfs -mkdir -p /user/hive/tmp"
+    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/tmp"
     su - hdfs -c "hdfs dfs -mkdir -p /user/hive/warehouse"
     su - hdfs -c "hdfs dfs -chmod a+w /user/hive/warehouse"
     su - hdfs -c "hdfs dfs -chown -R hive:supergroup /user/hive"

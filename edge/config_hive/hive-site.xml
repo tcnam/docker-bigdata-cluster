@@ -36,7 +36,7 @@
   </property>
   <property>
     <name>hive.exec.scratchdir</name>
-    <value>/tmp/hive</value>
+    <value>/user/hive/tmp</value>
     <description>HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/&lt;username&gt; is created, with ${hive.scratch.dir.permission}.</description>
   </property>
   <property>
@@ -140,17 +140,17 @@
   </property>
   <property>
     <name>hive.exec.local.scratchdir</name>
-    <value>${system:java.io.tmpdir}/${system:user.name}</value>
+    <value>/var/data/hadoop/hive/tmp/local/${user.name}</value>
     <description>Local scratch space for Hive jobs</description>
   </property>
   <property>
     <name>hive.downloaded.resources.dir</name>
-    <value>${system:java.io.tmpdir}/${hive.session.id}_resources</value>
+    <value>/var/data/hadoop/hive/tmp/resources/${user.name}</value>
     <description>Temporary local directory for added resources in the remote file system.</description>
   </property>
   <property>
     <name>hive.scratch.dir.permission</name>
-    <value>700</value>
+    <value>777</value>
     <description>The permission for the user specific scratch directories that get created.</description>
   </property>
   <property>
@@ -441,7 +441,7 @@
   </property>
   <property>
     <name>hive.metastore.db.type</name>
-    <value>DERBY</value>
+    <value>postgres</value>
     <description>
       Expects one of [derby, oracle, mysql, mssql, postgres].
       Type of database used by the metastore. Information schema &amp; JDBCStorageHandler depend on it.
@@ -581,7 +581,7 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:postgresql://hivemetastorepostgres:5432/metastore</value>
+    <value>jdbc:postgresql://metastore:5432/metastore</value>
     <description>
       JDBC connect string for a JDBC metastore.
       To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.
@@ -1843,7 +1843,7 @@
   </property>
   <property>
     <name>hive.querylog.location</name>
-    <value>${system:java.io.tmpdir}/${system:user.name}</value>
+    <value>/var/data/hadoop/hive/tmp/querylog/${user.name}</value>
     <description>Location of Hive run time structured log file</description>
   </property>
   <property>
@@ -4401,7 +4401,7 @@
   </property>
   <property>
     <name>hive.server2.logging.operation.log.location</name>
-    <value>${system:java.io.tmpdir}/${system:user.name}/operation_logs</value>
+    <value>/var/data/hadoop/hive/tmp/operationlog/${user.name}</value>
     <description>Top level directory where operation logs are stored if logging functionality is enabled</description>
   </property>
   <property>
@@ -4855,12 +4855,12 @@
   </property>
   <property>
     <name>hive.server2.keystore.path</name>
-    <value/>
+    <value>/opt/hive/conf/hiveserver2.jks</value>
     <description>SSL certificate keystore location.</description>
   </property>
   <property>
     <name>hive.server2.keystore.password</name>
-    <value/>
+    <value>hiveserver2</value>
     <description>SSL certificate keystore password.</description>
   </property>
   <property>

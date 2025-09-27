@@ -41,8 +41,16 @@ RUN mkdir -p /var/data/hadoop/hdfs/nn && \
     mkdir -p /var/data/hadoop/hdfs/snn && \
     mkdir -p /var/data/hadoop/hdfs/dn && \
     mkdir -p /var/data/hadoop/hdfs/logs && \
-    chmod 775 /var/data/hadoop/hdfs/logs && \
+    chmod -R 775 /var/data/hadoop/hdfs/logs && \
     chown -R hdfs:hadoop /var/data/hadoop/hdfs
+RUN mkdir -p /var/data/hadoop/hive/tmp/local && \
+    mkdir -p /var/data/hadoop/hive/tmp/resources && \
+    mkdir -p /var/data/hadoop/hive/tmp/querylog && \
+    mkdir -p /var/data/hadoop/hive/tmp/operationlog && \
+    mkdir -p /var/data/hadoop/hive/tmp/logs && \
+    chmod -R 777 /var/data/hadoop/hive/tmp && \
+    chown -R hive:hadoop /var/data/hadoop/hive/tmp
+
 
 # RUN mkdir -p /var/data/hadoop/logs
 # RUN chmod 775 /var/data/hadoop/logs
@@ -82,12 +90,15 @@ ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
 ARG HIVE_VERSION=3.1.3
 RUN tar -xvzf /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz -C /opt && \
     mv /opt/apache-hive-${HIVE_VERSION}-bin /opt/hive && \
-    rm /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz
+    rm /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz && \
+    chown -R hive:hadoop /opt/hive
 
 ENV HIVE_HOME=/opt/hive
 ENV HIVE_CONF_DIR=${HIVE_HOME}/conf
 
-ENV POSTGRES_HOST=hivemetastorepostgres
+RUN keytool -genkeypair -alias hiveserver2 -keyalg RSA -keysize 2048 -keystore $HIVE_CONF_DIR/hiveserver2.jks -validity 365
+
+ENV POSTGRES_HOST=metastore
 ENV POSTGRES_DB=metastore
 ENV POSTGRES_USER=hive
 ENV POSTGRES_PASSWORD=hive
@@ -103,7 +114,7 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
     echo 'export HIVE_HOME=/opt/hive' >> /etc/profile && \
     echo 'export HIVE_CONF_DIR=$HIVE_HOME/conf' >> /etc/profile && \
-    echo 'export POSTGRES_HOST=hivemetastorepostgres' >> /etc/profile && \
+    echo 'export POSTGRES_HOST=metastore' >> /etc/profile && \
     echo 'export POSTGRES_DB=metastore' >> /etc/profile && \
     echo 'export POSTGRES_USER=hive' >> /etc/profile && \
     echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
