@@ -6,6 +6,8 @@
 /hadoop/worker2/
 /hadoop/worker3/
 /hadoop/historyserver/
+/hadoop/hivemetastorepostgres/
+/hadoop/hiveserver2/
 yarn/
 .DS_Store
 baseimage/.DS_Store

@@ -138,6 +138,49 @@ services:
       hadoop_network:
         ipv4_address: ${historyserver_ip}
 
+  hivemetastorepostgres:
+    image: postgres:13-alpine
+    container_name: hivemetastorepostgres
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    volumes:
+      - hivemetastorepostgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      hadoop_network:
+        ipv4_address: ${hivemetastorepostgres_ip}
+
+  hiveserver2:
+    image: hadoop_base:1.0
+    container_name: hiveserver2
+    hostname: hiveserver2
+    user: hive
+    volumes:
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf
+      - config_hive:/opt/hive/conf
+      - hiveserver2:/opt/hive/logs
+      - ./hadoop/entrypoint.sh:/entrypoint.sh
+    depends_on:
+      - namenode
+      - secondarynamenode
+      - resourcemanager
+      - worker1
+      - worker2
+      - worker3
+      - historyserver
+      - hivemetastorepostgres
+    ports:
+      - "10000:10000" # HiveServer2 Thrift port
+      - "10002:10002" # HiveServer2 Web UI port
+    command: ["/entrypoint.sh", "hiveserver2"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${hiveserver2_ip}
+
   edgenode:
     image: hadoop_base:1.0
     container_name: edgenode
@@ -207,6 +250,18 @@ volumes:
       o: bind
       type: none
       device: ./hadoop/worker3
+  hivemetastorepostgres:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./hadoop/hivemetastorepostgres
+  hiveserver2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./hadoop/hiveserver2
   workspace:
     driver: local
     driver_opts:
@@ -225,6 +280,12 @@ volumes:
       o: bind
       type: none
       device: ./edge/config_spark
+  config_hive:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./edge/config_hive
 
 networks:
   hadoop_network:

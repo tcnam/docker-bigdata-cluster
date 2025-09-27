@@ -30,10 +30,11 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Setup user for hadoop cluster
 RUN groupadd hadoop && \
-    useradd -g hadoop yarn && \
-    useradd -g hadoop hdfs && \
-    useradd -g hadoop mapred && \
-    useradd -g hadoop spark
+    useradd -m -g hadoop yarn    && echo "yarn:yarn"     | chpasswd && \
+    useradd -m -g hadoop hdfs    && echo "hdfs:hdfs"     | chpasswd && \
+    useradd -m -g hadoop mapred  && echo "mapred:mapred" | chpasswd && \
+    useradd -m -g hadoop spark   && echo "spark:spark"   | chpasswd && \
+    useradd -m -g hadoop hive    && echo "hive:hive"     | chpasswd
 
 # Create necessary dir
 RUN mkdir -p /var/data/hadoop/hdfs/nn && \
@@ -60,6 +61,7 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     rm /opt/hadoop-${HADOOP_VERSION}.tar.gz
 ENV HADOOP_HOME=/opt/hadoop
+ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
 
@@ -76,6 +78,22 @@ ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
 # ENV PYSPARK_PATH=usr/bin/python3
 # ENV PATH=$PYSPARK_PATH/bin:$PATH
 
+# Install Hive
+ARG HIVE_VERSION=3.1.3
+RUN tar -xvzf /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz -C /opt && \
+    mv /opt/apache-hive-${HIVE_VERSION}-bin /opt/hive && \
+    rm /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz
+
+ENV HIVE_HOME=/opt/hive
+ENV HIVE_CONF_DIR=${HIVE_HOME}/conf
+
+ENV POSTGRES_HOST=hivemetastorepostgres
+ENV POSTGRES_DB=metastore
+ENV POSTGRES_USER=hive
+ENV POSTGRES_PASSWORD=hive
+
+ENV PATH=$HIVE_HOME/bin:$PATH
+
 
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
@@ -83,7 +101,13 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk' >> /etc/profile && \
     # echo 'export PYSPARK_PATH=usr/bin/python3' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
-    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH' >> /etc/profile
+    echo 'export HIVE_HOME=/opt/hive' >> /etc/profile && \
+    echo 'export HIVE_CONF_DIR=$HIVE_HOME/conf' >> /etc/profile && \
+    echo 'export POSTGRES_HOST=hivemetastorepostgres' >> /etc/profile && \
+    echo 'export POSTGRES_DB=metastore' >> /etc/profile && \
+    echo 'export POSTGRES_USER=hive' >> /etc/profile && \
+    echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
+    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 
 
 # Setup for edge node
