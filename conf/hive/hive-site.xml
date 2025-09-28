@@ -449,12 +449,12 @@
   </property>
   <property>
     <name>hive.metastore.warehouse.dir</name>
-    <value>/user/hive/warehouse</value>
+    <value>/user/hive/warehouse/internal</value>
     <description>location of default database for the warehouse</description>
   </property>
   <property>
     <name>hive.metastore.warehouse.external.dir</name>
-    <value/>
+    <value>/user/hive/warehouse/external</value>
     <description>Default location for external tables created in the warehouse. If not set or null, then the normal warehouse location will be used as the default location.</description>
   </property>
   <property>
@@ -2444,7 +2444,7 @@
   </property>
   <property>
     <name>hive.tez.container.size</name>
-    <value>-1</value>
+    <value>1024</value>
     <description>By default Tez will spawn containers of the size of a mapper. This can be used to overwrite.</description>
   </property>
   <property>
@@ -5089,13 +5089,29 @@
   </property>
   <property>
     <name>hive.execution.engine</name>
-    <value>mr</value>
+    <value>tez</value>
     <description>
       Expects one of [mr, tez, spark].
       Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR
       remains the default engine for historical reasons, it is itself a historical engine
       and is deprecated in Hive 2 line. It may be removed without further warning.
     </description>
+  </property>
+  <property>
+    <name>tez.lib.uris</name>
+    <value>hdfs://namenode:9000/user/tez/lib/tez.tar.gz,hdfs://namenode:9000/user/tez/lib/tez/lib,hdfs://namenode:9000/user/tez/lib/tez</value>
+  </property>
+  <property>
+      <name>tez.configuration</name>
+      <value>/opt/tez/conf/tez-site.xml</value>
+  </property>
+  <property>
+      <name>tez.use.cluster.hadoop-libs</name>
+      <value>true</value>
+  </property>
+  <property>
+    <name>tez.runtime.library.path</name>
+    <value>${tez.lib.uris}</value>
   </property>
   <property>
     <name>hive.execution.mode</name>

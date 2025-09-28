@@ -1,3 +1,9 @@
+create_dir:
+	mkdir .\services\namenode .\services\secondarynamenode .\services\resourcemanager .\services\worker1 .\services\worker2 .\services\worker3 .\services\historyserver .\services\metastore .\services\hiveserver2 
+
+delete_dir:
+	rmdir /S /Q .\services\namenode .\services\secondarynamenode .\services\resourcemanager .\services\worker1 .\services\worker2 .\services\worker3 .\services\historyserver .\services\metastore .\services\hiveserver2
+
 gen_jks:
 	keytool -genkeypair \
 		-alias hiveserver2 \
@@ -5,7 +11,7 @@ gen_jks:
 		-storetype JKS \
 		-keysize 2048 \
 		-validity 365 \
-		-keystore ./edge/config_hive/hiveserver2.jks \
+		-keystore ./conf/hive/hiveserver2.jks \
 		-storepass hiveserver2 \
 		-keypass hiveserver2 \
 		-ext SAN=IP:100.84.28.115,DNS:hiveserver2 \

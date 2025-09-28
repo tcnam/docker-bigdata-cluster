@@ -51,4 +51,4 @@ export HADOOP_HOME=/opt/hadoop
 export HIVE_CONF_DIR=$HIVE_HOME/conf
 
 # Folder containing extra libraries required for hive compilation/execution can be controlled by:
-# export HIVE_AUX_JARS_PATH=
+export HIVE_AUX_JARS_PATH=$TEZ_JARS

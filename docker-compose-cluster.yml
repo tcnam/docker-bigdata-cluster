@@ -8,6 +8,7 @@ services:
       - namenode:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       # - "8020:8020"
@@ -26,7 +27,8 @@ services:
     volumes:
       - resourcemanager:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_spark:/opt/spark/conf 
+      - config_spark:/opt/spark/conf
+      - config_tez:/opt/tez/conf  
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
@@ -43,7 +45,8 @@ services:
     volumes:
       - secondarynamenode:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_spark:/opt/spark/conf 
+      - config_spark:/opt/spark/conf
+      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
@@ -61,6 +64,7 @@ services:
       - worker1:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -80,6 +84,7 @@ services:
       - worker2:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
+      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -98,7 +103,8 @@ services:
     volumes:
       - worker3:/var/data/hadoop/hdfs
       - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_spark:/opt/spark/conf 
+      - config_spark:/opt/spark/conf
+      - config_tez:/opt/tez/conf  
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -120,6 +126,7 @@ services:
     volumes:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - config_tez:/opt/tez/conf 
       - historyserver:/opt/spark/logs
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
@@ -158,6 +165,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
+      - config_tez:/opt/tez/conf 
       - hiveserver2:/var/data/hadoop/hive/tmp
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
@@ -185,6 +193,7 @@ services:
     volumes:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf 
+      - config_tez:/opt/tez/conf 
       - workspace:/workspace    
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
@@ -282,6 +291,12 @@ volumes:
       o: bind
       type: none
       device: ./conf/hive
+  config_tez:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/tez
 
 networks:
   hadoop_network:

@@ -31,9 +31,22 @@ if [ "$NODE_TYPE" == "namenode" ]; then
     # Create dir for HIVE
     su - hdfs -c "hdfs dfs -mkdir -p /user/hive/tmp"
     su - hdfs -c "hdfs dfs -chmod a+w /user/hive/tmp"
-    su - hdfs -c "hdfs dfs -mkdir -p /user/hive/warehouse"
-    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/warehouse"
+    su - hdfs -c "hdfs dfs -mkdir -p /user/hive/warehouse/internal"
+    su - hdfs -c "hdfs dfs -mkdir -p /user/hive/warehouse/external"
+    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/warehouse/internal"
+    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/warehouse/external"
     su - hdfs -c "hdfs dfs -chown -R hive:supergroup /user/hive"
+
+    # Create dir for TEZ
+    su - hdfs -c "hdfs dfs -mkdir -p /user/tez/lib"
+    if [ $(hdfs dfs -count /user/tez/lib | awk '{print $2}') -gt 0 ]; then
+        echo "HDFS directory /user/tez/lib is either empty or does not exist. Not performing put."
+    else
+        echo "HDFS directory /user/tez/lib exists and is not empty. Proceeding with put."
+        su - hdfs -c "hdfs dfs -put $TEZ_HOME /user/tez/lib"
+        su - hdfs -c "hdfs dfs -put /opt/tez.tar.gz /user/tez/lib"
+    fi
+    su - hdfs -c "hdfs dfs -chown -R tez:supergroup /user/tez"
 
     # Create dir for spark
     su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"

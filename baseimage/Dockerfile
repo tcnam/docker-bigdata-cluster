@@ -23,6 +23,7 @@ ARG ARCHITECTURE=amd64
 ENV ARCHITECTURE=$ARCHITECTURE
 
 COPY baseimage/files/ /opt/
+# COPY baseimage/3rdjars/ /opt/3rdjars/
 
 RUN mv /usr/lib/jvm/java-8-openjdk-${ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
@@ -34,7 +35,8 @@ RUN groupadd hadoop && \
     useradd -m -g hadoop hdfs    && echo "hdfs:hdfs"     | chpasswd && \
     useradd -m -g hadoop mapred  && echo "mapred:mapred" | chpasswd && \
     useradd -m -g hadoop spark   && echo "spark:spark"   | chpasswd && \
-    useradd -m -g hadoop hive    && echo "hive:hive"     | chpasswd
+    useradd -m -g hadoop hive    && echo "hive:hive"     | chpasswd && \
+    useradd -m -g hadoop tez    && echo "tez:tez"     | chpasswd
 
 # Create necessary dir
 RUN mkdir -p /var/data/hadoop/hdfs/nn && \
@@ -64,7 +66,7 @@ ENV YARN_RESOURCEMANAGER_USER=yarn
 ENV YARN_NODEMANAGER_USER=yarn
 
 # Install Hadoop
-ARG HADOOP_VERSION=3.2.0
+ARG HADOOP_VERSION=3.3.6
 RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     rm /opt/hadoop-${HADOOP_VERSION}.tar.gz
@@ -74,10 +76,10 @@ ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
 
 # Install Spark
-ARG SPARK_VERSION=3.2.4
-RUN tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz -C /opt && \
-    mv /opt/spark-${SPARK_VERSION}-bin-hadoop3.2 /opt/spark && \
-    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz
+ARG SPARK_VERSION=3.3.4
+RUN tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz -C /opt && \
+    mv /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13 /opt/spark && \
+    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz
 
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
@@ -105,6 +107,19 @@ ENV POSTGRES_PASSWORD=hive
 
 ENV PATH=$HIVE_HOME/bin:$PATH
 
+# Install Tez
+ARG TEZ_VERSION=0.10.2
+RUN tar -xvzf /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz -C /opt && \
+    mv /opt/apache-tez-${TEZ_VERSION}-bin /opt/tez && \
+    rm /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz && \
+    tar zcvf /opt/tez.tar.gz -C /opt tez && \
+    chown -R tez:hadoop /opt/tez
+
+ENV TEZ_HOME=/opt/tez
+ENV TEZ_CONF_DIR=${TEZ_HOME}/conf
+ENV TEZ_JARS=${TEZ_HOME}
+ENV HADOOP_CLASSPATH=${TEZ_HOME}/*:${TEZ_CONF_DIR}
+
 
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
@@ -118,6 +133,10 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export POSTGRES_DB=metastore' >> /etc/profile && \
     echo 'export POSTGRES_USER=hive' >> /etc/profile && \
     echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
+    echo 'export TEZ_HOME=/opt/tez' >> /etc/profile && \
+    echo 'export TEZ_CONF_DIR=$TEZ_HOME/conf' >> /etc/profile && \
+    echo 'export TEZ_JARS=$TEZ_HOME' >> /etc/profile && \
+    echo 'export HADOOP_CLASSPATH=$TEZ_HOME/*:$TEZ_CONF_DIR' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 
 
