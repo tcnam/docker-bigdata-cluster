@@ -20,12 +20,12 @@ gen_jks:
 	keytool -export \
 			-alias hiveserver2 \
 			-keystore ./conf/hive/hiveserver2.jks \
-			-file server.crt \
+			-file ./conf/hive/server.crt \
 			-storepass hiveserver2
 
 	keytool -import \
 			-alias hiveserver2 \
-			-file server.crt \
+			-file ./conf/hive/server.crt \
 			-keystore ./conf/hive/truststore.jks \
 			-storepass hiveserver2
 
