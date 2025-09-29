@@ -20,6 +20,9 @@ if [ "$NODE_TYPE" == "namenode" ]; then
 
     # create folders in hdfs after leaving safe mode
 
+    su - hdfs -c "hdfs dfs -mkdir -p /tmp"
+    su - hdfs -c "hdfs dfs -chmod -R a+w /tmp"
+
     # Create dir for yarn
     su - hdfs -c "hdfs dfs -mkdir -p /user/yarn"
     su - hdfs -c "hdfs dfs -chown -R yarn:supergroup /user/yarn"

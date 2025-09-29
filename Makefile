@@ -17,17 +17,17 @@ gen_jks:
 		-ext SAN=IP:100.84.28.115,DNS:hiveserver2 \
 		-dname "CN=hive.local, OU=Data, O=MyOrg, L=HCM, ST=VN, C=VN"
 	
-	keytool -export \
-			-alias hiveserver2 \
-			-keystore ./conf/hive/hiveserver2.jks \
-			-file ./conf/hive/server.crt \
-			-storepass hiveserver2
+# 	keytool -export \
+# 			-alias hiveserver2 \
+# 			-keystore ./conf/hive/hiveserver2.jks \
+# 			-file ./conf/hive/server.crt \
+# 			-storepass hiveserver2
 
-	keytool -import \
-			-alias hiveserver2 \
-			-file ./conf/hive/server.crt \
-			-keystore ./conf/hive/truststore.jks \
-			-storepass hiveserver2
+# 	keytool -import \
+# 			-alias hiveserver2 \
+# 			-file ./conf/hive/server.crt \
+# 			-keystore ./conf/hive/truststore.jks \
+# 			-storepass hiveserver2
 
 		
 rebuild_new_image:
