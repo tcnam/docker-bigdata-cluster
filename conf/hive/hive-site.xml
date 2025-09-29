@@ -5089,7 +5089,7 @@
   </property>
   <property>
     <name>hive.execution.engine</name>
-    <value>tez</value>
+    <value>mr</value>
     <description>
       Expects one of [mr, tez, spark].
       Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR
@@ -6878,8 +6878,8 @@
   </property>
   <property>
     <name>hive.query.results.cache.directory</name>
-    <value>/tmp/hive/_resultscache_</value>
-    <description>Location of the query results cache directory. Temporary results from queries will be moved to this location.</description>
+    <value>/user/hive/tmp/resultscache</value>
+    <description>HDFS Location of the query results cache directory. Temporary results from queries will be moved to this location.</description>
   </property>
   <property>
     <name>hive.query.results.cache.max.entry.lifetime</name>

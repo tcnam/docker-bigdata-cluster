@@ -33,11 +33,13 @@ if [ "$NODE_TYPE" == "namenode" ]; then
 
     # Create dir for HIVE
     su - hdfs -c "hdfs dfs -mkdir -p /user/hive/tmp"
-    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/tmp"
+    su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/tmp"
+    su - hdfs -c "hdfs dfs -mkdir -p /user/hive/tmp/resultscache"
+    su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/tmp/resultscache"
     su - hdfs -c "hdfs dfs -mkdir -p /user/hive/warehouse/internal"
     su - hdfs -c "hdfs dfs -mkdir -p /user/hive/warehouse/external"
-    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/warehouse/internal"
-    su - hdfs -c "hdfs dfs -chmod a+w /user/hive/warehouse/external"
+    su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/warehouse/internal"
+    su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/warehouse/external"
     su - hdfs -c "hdfs dfs -chown -R hive:supergroup /user/hive"
 
     # Create dir for TEZ
@@ -86,6 +88,11 @@ elif [ "$NODE_TYPE" == "hiveserver2" ]; then
     until hdfs dfsadmin -safemode get | grep -q 'OFF'; do
         echo "Waiting for HDFS to leave safe mode..."
         sleep 3
+    done
+
+    until nc -z "metastore" "5432"; do
+        echo "Waiting for metastore:5432.."
+        sleep 2
     done
     # Initialize the Hive Metastore schema if not already initialized
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

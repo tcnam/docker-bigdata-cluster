@@ -72,6 +72,7 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     rm /opt/hadoop-${HADOOP_VERSION}.tar.gz
 ENV HADOOP_HOME=/opt/hadoop
 ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+# RUN echo "export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath --glob)" >> /etc/profile.d/hadoop.sh
 ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
 
@@ -118,7 +119,8 @@ RUN tar -xvzf /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz -C /opt && \
 ENV TEZ_HOME=/opt/tez
 ENV TEZ_CONF_DIR=${TEZ_HOME}/conf
 ENV TEZ_JARS=${TEZ_HOME}
-ENV HADOOP_CLASSPATH=${TEZ_HOME}/*:${TEZ_CONF_DIR}
+
+# ENV HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HIVE_HOME}/lib/*:${TEZ_HOME}/*:${TEZ_CONF_DIR}
 
 
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
@@ -136,7 +138,7 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export TEZ_HOME=/opt/tez' >> /etc/profile && \
     echo 'export TEZ_CONF_DIR=$TEZ_HOME/conf' >> /etc/profile && \
     echo 'export TEZ_JARS=$TEZ_HOME' >> /etc/profile && \
-    echo 'export HADOOP_CLASSPATH=$TEZ_HOME/*:$TEZ_CONF_DIR' >> /etc/profile && \
+    # echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_HOME/lib/*:$TEZ_HOME/*:$TEZ_CONF_DIR' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 
 
