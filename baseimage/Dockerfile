@@ -72,7 +72,6 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     rm /opt/hadoop-${HADOOP_VERSION}.tar.gz
 ENV HADOOP_HOME=/opt/hadoop
 ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-# RUN echo "export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath --glob)" >> /etc/profile.d/hadoop.sh
 ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
 
@@ -80,7 +79,7 @@ ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 ARG SPARK_VERSION=3.3.4
 RUN tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz -C /opt && \
     mv /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13 /opt/spark && \
-    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz
+    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz 
 
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
@@ -99,7 +98,7 @@ RUN tar -xvzf /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz -C /opt && \
 ENV HIVE_HOME=/opt/hive
 ENV HIVE_CONF_DIR=${HIVE_HOME}/conf
 
-RUN keytool -genkeypair -alias hiveserver2 -keyalg RSA -keysize 2048 -keystore $HIVE_CONF_DIR/hiveserver2.jks -validity 365
+# RUN keytool -genkeypair -alias hiveserver2 -keyalg RSA -keysize 2048 -keystore $HIVE_CONF_DIR/hiveserver2.jks -validity 365
 
 ENV POSTGRES_HOST=metastore
 ENV POSTGRES_DB=metastore
@@ -113,6 +112,7 @@ ARG TEZ_VERSION=0.10.2
 RUN tar -xvzf /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz -C /opt && \
     mv /opt/apache-tez-${TEZ_VERSION}-bin /opt/tez && \
     rm /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz && \
+    # rm -f $TEZ_HOME/lib/hadoop-*.jar && \
     tar zcvf /opt/tez.tar.gz -C /opt tez && \
     chown -R tez:hadoop /opt/tez
 
@@ -120,7 +120,17 @@ ENV TEZ_HOME=/opt/tez
 ENV TEZ_CONF_DIR=${TEZ_HOME}/conf
 ENV TEZ_JARS=${TEZ_HOME}
 
-# ENV HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HIVE_HOME}/lib/*:${TEZ_HOME}/*:${TEZ_CONF_DIR}
+ENV HADOOP_CLASSPATH="\
+$HADOOP_HOME/share/hadoop/common/*:\
+$HADOOP_HOME/share/hadoop/common/lib/*:\
+$HADOOP_HOME/share/hadoop/hdfs/*:\
+$HADOOP_HOME/share/hadoop/mapreduce/*:\
+$HADOOP_HOME/share/hadoop/yarn/*:\
+# $SPARK_HOME/jars/*:\
+$HIVE_HOME/lib/*:\
+${TEZ_HOME}/*:${TEZ_CONF_DIR}"
+
+# ENV HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${TEZ_HOME}/*:${TEZ_CONF_DIR}
 
 
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
@@ -138,7 +148,7 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export TEZ_HOME=/opt/tez' >> /etc/profile && \
     echo 'export TEZ_CONF_DIR=$TEZ_HOME/conf' >> /etc/profile && \
     echo 'export TEZ_JARS=$TEZ_HOME' >> /etc/profile && \
-    # echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_HOME/lib/*:$TEZ_HOME/*:$TEZ_CONF_DIR' >> /etc/profile && \
+    echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 
 
