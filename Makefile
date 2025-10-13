@@ -32,9 +32,16 @@ gen_jks:
 		
 rebuild_new_image:
 	docker image rm hadoop_base:1.0
-	docker buildx build --file ./baseimage/Dockerfile --no-cache --platform linux/amd64 --build-arg ARCHITECTURE=amd64 -t hadoop_base:1.0 .
+	docker buildx build --file ./baseimage/Dockerfile --platform linux/amd64 --build-arg ARCHITECTURE=amd64 -t hadoop_base:1.0 .
 
 rebuild_image:
+	docker buildx build --file ./baseimage/Dockerfile --platform linux/amd64 --build-arg ARCHITECTURE=amd64 -t hadoop_base:1.0 .
+
+rebuild_new_image_no_cache:
+	docker image rm hadoop_base:1.0
+	docker buildx build --file ./baseimage/Dockerfile --no-cache --platform linux/amd64 --build-arg ARCHITECTURE=amd64 -t hadoop_base:1.0 .
+
+rebuild_image_no_cache:
 	docker buildx build --file ./baseimage/Dockerfile --no-cache --platform linux/amd64 --build-arg ARCHITECTURE=amd64 -t hadoop_base:1.0 .
 
 start_cluster:

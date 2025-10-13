@@ -3911,7 +3911,7 @@
   </property>
   <property>
     <name>hive.log.explain.output</name>
-    <value>false</value>
+    <value>true</value>
     <description>
       Whether to log explain output for every query.
       When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level
@@ -5089,7 +5089,7 @@
   </property>
   <property>
     <name>hive.execution.engine</name>
-    <value>tez</value>
+    <value>mr</value>
     <description>
       Expects one of [mr, tez, spark].
       Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR
