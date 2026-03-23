@@ -33,7 +33,7 @@
 # This value will be overridden by an Xmx setting specified in HADOOP_OPTS,
 # and/or MAPRED_HISTORYSERVER_OPTS.
 # Default is the same as HADOOP_HEAPSIZE_MAX.
-export HADOOP_JOB_HISTORYSERVER_HEAPSIZE=250
+export HADOOP_JOB_HISTORYSERVER_HEAPSIZE=${HADOOP_HEAPSIZE_MIN}
 
 # Specify the JVM options to be used when starting the HistoryServer.
 # These options will be appended to the options specified as HADOOP_OPTS

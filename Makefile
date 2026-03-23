@@ -17,7 +17,7 @@ gen_jks:
 		-ext SAN=IP:100.84.28.115,DNS:hiveserver2 \
 		-dname "CN=hive.local, OU=Data, O=MyOrg, L=HCM, ST=VN, C=VN"
 	
-# 	keytool -export \
+# 	keytool -exporat \
 # 			-alias hiveserver2 \
 # 			-keystore ./conf/hive/hiveserver2.jks \
 # 			-file ./conf/hive/server.crt \

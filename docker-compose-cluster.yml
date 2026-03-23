@@ -5,14 +5,11 @@ services:
     hostname: namenode
     user: root
     volumes:
-      - namenode:/var/data/hadoop/hdfs
+      - namenode:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
-      # - "8020:8020"
-      - "9000:9000"
       - "9870:9870" # hdfs WebUI
     entrypoint: ["/entrypoint.sh", "namenode"]
     networks:
@@ -25,14 +22,12 @@ services:
     hostname: resourcemanager
     user: root
     volumes:
-      - resourcemanager:/var/data/hadoop/hdfs
+      - resourcemanager:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - config_tez:/opt/tez/conf  
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
-      - "8032:8032" #Resource Manager WebUI
     entrypoint: ["/entrypoint.sh", "resourcemanager"]
     networks:
       hadoop_network:
@@ -43,10 +38,9 @@ services:
     hostname: secondarynamenode
     user: root
     volumes:
-      - secondarynamenode:/var/data/hadoop/hdfs
+      - secondarynamenode:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
@@ -61,10 +55,9 @@ services:
     hostname: worker1
     user: root
     volumes:
-      - worker1:/var/data/hadoop/hdfs
+      - worker1:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - config_tez:/opt/tez/conf 
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -81,10 +74,9 @@ services:
     hostname: worker2
     user: root
     volumes:
-      - worker2:/var/data/hadoop/hdfs
+      - worker2:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_spark:/opt/spark/conf 
-      - config_tez:/opt/tez/conf 
+      - config_spark:/opt/spark/conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -101,10 +93,9 @@ services:
     hostname: worker3
     user: root
     volumes:
-      - worker3:/var/data/hadoop/hdfs
+      - worker3:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - config_tez:/opt/tez/conf  
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -124,10 +115,9 @@ services:
       - "18080:18080" #Spark History Server UI
       - "19888:19888" #Mapreduce History Server UI
     volumes:
+      - historyserver:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - config_tez:/opt/tez/conf 
-      - historyserver:/opt/spark/logs
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -156,17 +146,16 @@ services:
       hadoop_network:
         ipv4_address: ${metastore_ip}
 
-  hiveserver2:
+  thriftserver:
     image: hadoop_base:1.0
-    container_name: hiveserver2
-    hostname: hiveserver2
+    container_name: thriftserver
+    hostname: thriftserver
     user: hive
     volumes:
+      - thriftserver:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
-      - config_tez:/opt/tez/conf 
-      - hiveserver2:/var/data/hadoop/hive/tmp
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -178,39 +167,39 @@ services:
       - historyserver
       - metastore
     ports:
-      - "10000:10000" # HiveServer2 Thrift port
-      - "10002:10002" # HiveServer2 Web UI port
-    command: ["/entrypoint.sh", "hiveserver2"]
-    networks:
-      hadoop_network:
-        ipv4_address: ${hiveserver2_ip}
-
-  edgenode:
-    image: hadoop_base:1.0
-    container_name: edgenode
-    hostname: edgenode
-    user: spark
-    volumes:
-      - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_spark:/opt/spark/conf 
-      - config_tez:/opt/tez/conf 
-      - workspace:/workspace    
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
-    depends_on:
-      - namenode
-      - secondarynamenode
-      - resourcemanager
-      - worker1
-      - worker2
-      - worker3
-      - historyserver
-    ports:
-      # - "2222:22"
       - "4040:4040"
-    command: ["/entrypoint.sh", "edgenode"]
+      - "10000:10000"
+      - "10002:10002"
+    command: ["/entrypoint.sh", "thriftserver"]
     networks:
       hadoop_network:
-        ipv4_address: ${edgenode_ip}
+        ipv4_address: ${thriftserver_ip}
+
+  # edgenode:
+  #   image: hadoop_base:1.0
+  #   container_name: edgenode
+  #   hostname: edgenode
+  #   user: spark
+  #   volumes:
+  #     - config_hadoop:/opt/hadoop/etc/hadoop
+  #     - config_spark:/opt/spark/conf 
+  #     - workspace:/workspace    
+  #     - ./setupScripts/entrypoint.sh:/entrypoint.sh
+  #   depends_on:
+  #     - namenode
+  #     - secondarynamenode
+  #     - resourcemanager
+  #     - worker1
+  #     - worker2
+  #     - worker3
+  #     - historyserver
+  #   ports:
+  #     # - "2222:22"
+  #     - "4040:4040"
+  #   command: ["/entrypoint.sh", "edgenode"]
+  #   networks:
+  #     hadoop_network:
+  #       ipv4_address: ${edgenode_ip}
 
 volumes:
   namenode:
@@ -261,18 +250,18 @@ volumes:
       o: bind
       type: none
       device: ./services/metastore
-  hiveserver2:
+  thriftserver:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/hiveserver2
-  workspace:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./edge/workspace
+      device: ./services/thriftserver
+  # workspace:
+  #   driver: local
+  #   driver_opts:
+  #     o: bind
+  #     type: none
+  #     device: ./edge/workspace
   config_hadoop:
     driver: local
     driver_opts:
@@ -291,12 +280,6 @@ volumes:
       o: bind
       type: none
       device: ./conf/hive
-  config_tez:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./conf/tez
 
 networks:
   hadoop_network:

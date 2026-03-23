@@ -53,6 +53,10 @@
 # variable is REQUIRED on ALL platforms except OS X!
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 
+# The language environment in which Hadoop runs. Use the English
+# environment to ensure that logs are printed as expected.
+export LANG=en_US.UTF-8
+
 # Location of Hadoop.  By default, Hadoop will attempt to determine
 # this location based upon its execution path.
 export HADOOP_HOME=/opt/hadoop
@@ -72,14 +76,14 @@ export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 # prefer any Xmx setting in their respective _OPT variable.
 # There is no default; the JVM will autoscale based upon machine
 # memory size.
-export HADOOP_HEAPSIZE_MAX=500
+export HADOOP_HEAPSIZE_MAX=512
 
 # The minimum amount of heap to use (Java -Xms).  If no unit
 # is provided, it will be converted to MB.  Daemons will
 # prefer any Xms setting in their respective _OPT variable.
 # There is no default; the JVM will autoscale based upon machine
 # memory size.
-export HADOOP_HEAPSIZE_MIN=100
+export HADOOP_HEAPSIZE_MIN=256
 
 # Enable extra debugging of Hadoop's JAAS binding, used to set up
 # Kerberos security.
@@ -89,7 +93,7 @@ export HADOOP_HEAPSIZE_MIN=100
 # IPv6 yet/still, so by default the preference is set to IPv4.
 # export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true"
 # For Kerberos debugging, an extended option set logs more information
-# export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true -Dsun.security.krb5.debug=true -Dsun.security.spnego.debug"
+export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true -Dsun.security.krb5.debug=true -Dsun.security.spnego.debug"
 
 # Some parts of the shell code may do special things dependent upon
 # the operating system.  We have to set this here. See the next
@@ -123,10 +127,10 @@ export HADOOP_OS_TYPE=${HADOOP_OS_TYPE:-$(uname -s)}
 # Similarly, end users should utilize ${HOME}/.hadooprc .
 # This variable should ideally only be used as a short-cut,
 # interactive way for temporary additions on the command line.
-export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath --glob)
+# export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}
 
 # Should HADOOP_CLASSPATH be first in the official CLASSPATH?
-# export HADOOP_USER_CLASSPATH_FIRST="yes"
+export HADOOP_USER_CLASSPATH_FIRST="yes"
 
 # If HADOOP_USE_CLIENT_CLASSLOADER is set, the classpath along
 # with the main jar are handled by a separate isolated
@@ -144,7 +148,7 @@ export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath --glob)
 # Enable optional, bundled Hadoop features
 # This is a comma delimited list.  It may NOT be overridden via .hadooprc
 # Entries may be added/removed as needed.
-# export HADOOP_OPTIONAL_TOOLS="hadoop-kafka,hadoop-aws,hadoop-azure-datalake,hadoop-aliyun,hadoop-azure"
+# export HADOOP_OPTIONAL_TOOLS="hadoop-aws,hadoop-aliyun,hadoop-azure-datalake,hadoop-azure,hadoop-kafka"
 
 ###
 # Options for remote shell connectivity
@@ -184,34 +188,34 @@ export HADOOP_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath --glob)
 # Where (primarily) daemon log files are stored.
 # ${HADOOP_HOME}/logs by default.
 # Java property: hadoop.log.dir
-export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
+export HADOOP_LOG_DIR=/var/data/hadoop/logs
 
 # A string representing this instance of hadoop. $USER by default.
 # This is used in writing log and pid files, so keep that in mind!
 # Java property: hadoop.id.str
-# export HADOOP_IDENT_STRING=$USER
+export HADOOP_IDENT_STRING=$USER
 
 # How many seconds to pause after stopping a daemon
 # export HADOOP_STOP_TIMEOUT=5
 
 # Where pid files are stored.  /tmp by default.
-# export HADOOP_PID_DIR=/tmp
+export HADOOP_PID_DIR=/var/data/hadoop/pid
 
 # Default log4j setting for interactive commands
 # Java property: hadoop.root.logger
-# export HADOOP_ROOT_LOGGER=INFO,console
+export HADOOP_ROOT_LOGGER=INFO,console
 
 # Default log4j setting for daemons spawned explicitly by
 # --daemon option of hadoop, hdfs, mapred and yarn command.
 # Java property: hadoop.root.logger
-# export HADOOP_DAEMON_ROOT_LOGGER=INFO,RFA
+export HADOOP_DAEMON_ROOT_LOGGER=INFO,RFA
 
 # Default log level and output location for security-related messages.
 # You will almost certainly want to change this on a per-daemon basis via
 # the Java property (i.e., -Dhadoop.security.logger=foo). (Note that the
 # defaults for the NN and 2NN override this by default.)
 # Java property: hadoop.security.logger
-# export HADOOP_SECURITY_LOGGER=INFO,NullAppender
+export HADOOP_SECURITY_LOGGER=INFO,NullAppender
 
 # Default process priority level
 # Note that sub-processes will also run at this level!
@@ -219,7 +223,7 @@ export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
 
 # Default name for the service level authorization file
 # Java property: hadoop.policy.file
-# export HADOOP_POLICYFILE="hadoop-policy.xml"
+export HADOOP_POLICYFILE="hadoop-policy.xml"
 
 #
 # NOTE: this is not used by default!  <-----
@@ -227,7 +231,7 @@ export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
 # For example, it is common to use the same garbage collection settings
 # for all the daemons.  So one could define:
 #
-# export HADOOP_GC_SETTINGS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps"
+export HADOOP_GC_SETTINGS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps"
 #
 # .. and then use it as per the b option under the namenode.
 
@@ -249,12 +253,12 @@ export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
 
 #
 # This directory contains pids for secure and privileged processes.
-#export HADOOP_SECURE_PID_DIR=${HADOOP_PID_DIR}
+export HADOOP_SECURE_PID_DIR=${HADOOP_PID_DIR}
 
 #
 # This directory contains the logs for secure and privileged processes.
 # Java property: hadoop.log.dir
-# export HADOOP_SECURE_LOG=${HADOOP_LOG_DIR}
+export HADOOP_SECURE_LOG=${HADOOP_LOG_DIR}
 
 #
 # When running a secure daemon, the default value of HADOOP_IDENT_STRING
@@ -278,10 +282,10 @@ export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # a) Set JMX options
-# export HDFS_NAMENODE_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
+export HDFS_NAMENODE_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
 #
 # b) Set garbage collection logs
-# export HDFS_NAMENODE_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
+export HDFS_NAMENODE_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
 #
 # c) ... or set them directly
 # export HDFS_NAMENODE_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
@@ -297,7 +301,7 @@ export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # This is the default:
-# export HDFS_SECONDARYNAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS"
+export HDFS_SECONDARYNAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS"
 
 ###
 # DataNode specific parameters
@@ -307,7 +311,7 @@ export HADOOP_LOG_DIR=/var/data/hadoop/hdfs/logs
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # This is the default:
-# export HDFS_DATANODE_OPTS="-Dhadoop.security.logger=ERROR,RFAS"
+export HDFS_DATANODE_OPTS="-Dhadoop.security.logger=ERROR,RFAS"
 
 # On secure datanodes, user to run the datanode as after dropping privileges.
 # This **MUST** be uncommented to enable secure HDFS if using privileged ports

@@ -6,7 +6,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y openjdk-8-jdk && \
-    apt-get install -y openjdk-8-jre && \
     apt-get install -y wget && \
     apt-get install -y curl && \
     # apt-get install -y python3 && \
@@ -19,15 +18,19 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Set JAVA_HOME environment variable
-ARG ARCHITECTURE=amd64
-ENV ARCHITECTURE=$ARCHITECTURE
+ARG ARCHITECTURE
 
 COPY baseimage/files/ /opt/
 # COPY baseimage/3rdjars/ /opt/3rdjars/
 
+# 1. Rename the directory to a generic name
+# 2. Set JAVA_HOME and JRE_HOME
+# 3. Update PATH
 RUN mv /usr/lib/jvm/java-8-openjdk-${ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
+
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
-ENV PATH=$JAVA_HOME/bin:$PATH
+ENV JRE_HOME=${JAVA_HOME}/jre
+ENV PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$PATH
 
 # Setup user for hadoop cluster
 RUN groupadd hadoop && \
@@ -35,28 +38,33 @@ RUN groupadd hadoop && \
     useradd -m -g hadoop hdfs    && echo "hdfs:hdfs"     | chpasswd && \
     useradd -m -g hadoop mapred  && echo "mapred:mapred" | chpasswd && \
     useradd -m -g hadoop spark   && echo "spark:spark"   | chpasswd && \
-    useradd -m -g hadoop hive    && echo "hive:hive"     | chpasswd && \
-    useradd -m -g hadoop tez    && echo "tez:tez"     | chpasswd
+    useradd -m -g hadoop hive    && echo "hive:hive"     | chpasswd 
 
 # Create necessary dir
+# For hdfs only
 RUN mkdir -p /var/data/hadoop/hdfs/nn && \
     mkdir -p /var/data/hadoop/hdfs/snn && \
     mkdir -p /var/data/hadoop/hdfs/dn && \
-    mkdir -p /var/data/hadoop/hdfs/logs && \
-    chmod -R 775 /var/data/hadoop/hdfs/logs && \
     chown -R hdfs:hadoop /var/data/hadoop/hdfs
-RUN mkdir -p /var/data/hadoop/hive/tmp/local && \
-    mkdir -p /var/data/hadoop/hive/tmp/resources && \
-    mkdir -p /var/data/hadoop/hive/tmp/querylog && \
-    mkdir -p /var/data/hadoop/hive/tmp/operationlog && \
-    mkdir -p /var/data/hadoop/hive/tmp/logs && \
-    chmod -R 777 /var/data/hadoop/hive/tmp && \
-    chown -R hive:hadoop /var/data/hadoop/hive/tmp
 
+# For both hdfs and yarn
+RUN mkdir -p /var/data/hadoop/logs && \
+    mkdir -p /var/data/hadoop/pid && \
+    mkdir -p /var/data/hadoop/tmp && \
+    chmod -R 775 /var/data/hadoop/logs && \
+    chmod -R 775 /var/data/hadoop/pid && \
+    chmod -R 775 /var/data/hadoop/tmp && \
+    chown -R yarn:hadoop /var/data/hadoop/logs && \
+    chown -R yarn:hadoop /var/data/hadoop/pid && \
+    chown -R yarn:hadoop /var/data/hadoop/tmp
 
-# RUN mkdir -p /var/data/hadoop/logs
-# RUN chmod 775 /var/data/hadoop/logs
-# RUN chown -R yarn:hadoop /var/data/hadoop/logs
+# For hive
+RUN mkdir -p /var/data/hadoop/hive/local && \
+    mkdir -p /var/data/hadoop/hive/resources && \
+    mkdir -p /var/data/hadoop/hive/operationlog && \
+    mkdir -p /var/data/hadoop/hive/logs && \
+    chmod -R 775 /var/data/hadoop/hive && \
+    chown -R hive:hadoop /var/data/hadoop/hive
 
 #Setup Hadoop related environment variables
 ENV HDFS_NAMENODE_USER=hdfs
@@ -66,7 +74,7 @@ ENV YARN_RESOURCEMANAGER_USER=yarn
 ENV YARN_NODEMANAGER_USER=yarn
 
 # Install Hadoop
-ARG HADOOP_VERSION=3.3.6
+ARG HADOOP_VERSION
 RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/hadoop-${HADOOP_VERSION} /opt/hadoop && \
     rm /opt/hadoop-${HADOOP_VERSION}.tar.gz
@@ -76,10 +84,10 @@ ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
 
 # Install Spark
-ARG SPARK_VERSION=3.3.4
-RUN tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz -C /opt && \
-    mv /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13 /opt/spark && \
-    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz 
+ARG SPARK_VERSION
+RUN tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop3.tgz -C /opt && \
+    mv /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark && \
+    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3.tgz 
 
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
@@ -89,7 +97,7 @@ ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
 # ENV PATH=$PYSPARK_PATH/bin:$PATH
 
 # Install Hive
-ARG HIVE_VERSION=3.1.3
+ARG HIVE_VERSION
 RUN tar -xvzf /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz -C /opt && \
     mv /opt/apache-hive-${HIVE_VERSION}-bin /opt/hive && \
     rm /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz && \
@@ -107,30 +115,15 @@ ENV POSTGRES_PASSWORD=hive
 
 ENV PATH=$HIVE_HOME/bin:$PATH
 
-# Install Tez
-ARG TEZ_VERSION=0.10.2
-RUN tar -xvzf /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz -C /opt && \
-    mv /opt/apache-tez-${TEZ_VERSION}-bin /opt/tez && \
-    rm /opt/apache-tez-${TEZ_VERSION}-bin.tar.gz && \
-    # rm -f $TEZ_HOME/lib/hadoop-*.jar && \
-    tar zcvf /opt/tez.tar.gz -C /opt tez && \
-    chown -R tez:hadoop /opt/tez
-
-ENV TEZ_HOME=/opt/tez
-ENV TEZ_CONF_DIR=${TEZ_HOME}/conf
-ENV TEZ_JARS=${TEZ_HOME}
-
 ENV HADOOP_CLASSPATH="\
-$HADOOP_HOME/share/hadoop/common/*:\
-$HADOOP_HOME/share/hadoop/common/lib/*:\
-$HADOOP_HOME/share/hadoop/hdfs/*:\
-$HADOOP_HOME/share/hadoop/mapreduce/*:\
-$HADOOP_HOME/share/hadoop/yarn/*:\
-# $SPARK_HOME/jars/*:\
-$HIVE_HOME/lib/*:\
-${TEZ_HOME}/*:${TEZ_CONF_DIR}"
-
-# ENV HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${TEZ_HOME}/*:${TEZ_CONF_DIR}
+${HADOOP_CONF_DIR}:\
+${HADOOP_HOME}/share/hadoop/common/lib/*:\
+${HADOOP_HOME}/share/hadoop/common/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/*:\
+${HADOOP_HOME}/share/hadoop/yarn/lib/*:\
+${HADOOP_HOME}/share/hadoop/yarn/*:\
+${HADOOP_HOME}/share/hadoop/mapreduce/*"
 
 
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
@@ -145,9 +138,6 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export POSTGRES_DB=metastore' >> /etc/profile && \
     echo 'export POSTGRES_USER=hive' >> /etc/profile && \
     echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
-    echo 'export TEZ_HOME=/opt/tez' >> /etc/profile && \
-    echo 'export TEZ_CONF_DIR=$TEZ_HOME/conf' >> /etc/profile && \
-    echo 'export TEZ_JARS=$TEZ_HOME' >> /etc/profile && \
     echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 

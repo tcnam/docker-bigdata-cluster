@@ -1,0 +1,85 @@
+[tools]
+java = "temurin-8.0.482+8"
+
+[env]
+# Version Definitions
+HADOOP_VERSION = "3.4.1"
+SPARK_VERSION = "3.5.5"
+HIVE_VERSION = "3.1.3"
+
+# Architecture Detection
+DOCKER_PLATFORM = "{% if os() == 'macos' %}linux/arm64{% else %}linux/amd64{% endif %}"
+IMAGE_ARCH = "{% if os() == 'macos' %}arm64{% else %}amd64{% endif %}"
+
+[tasks.build_image]
+description = "Build base image with version args"
+run = [
+  """docker buildx build --file ./baseimage/Dockerfile \
+    --no-cache \
+    --platform {{ env.DOCKER_PLATFORM }} \
+    --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} \
+    --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} \
+    --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
+    --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
+    -t hadoop_base:1.0 ."""
+]
+
+[tasks.rebuild_image]
+description = "Build base image with version args"
+run = [
+  "docker image rm hadoop_base:1.0",
+  """
+  docker buildx build --file ./baseimage/Dockerfile \
+    --no-cache \
+    --platform {{ env.DOCKER_PLATFORM }} \
+    --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} \
+    --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} \
+    --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
+    --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
+    -t hadoop_base:1.0 .
+  """
+]
+
+[tasks.create_dir]
+description = "Create service directories"
+run = "mkdir .\\services\\namenode .\\services\\secondarynamenode .\\services\\resourcemanager .\\services\\worker1 .\\services\\worker2 .\\services\\worker3 .\\services\\historyserver .\\services\\metastore .\\services\\thriftserver"
+
+[tasks.delete_dir]
+description = "Remove service directories"
+run = "rmdir /S /Q .\\services\\namenode .\\services\\secondarynamenode .\\services\\resourcemanager .\\services\\worker1 .\\services\\worker2 .\\services\\worker3 .\\services\\historyserver .\\services\\metastore .\\services\\thriftserver"
+
+[tasks.gen_jks]
+description = "Generate JKS keystore for Hive"
+run = """
+keytool -genkeypair \
+    -alias thriftserver \
+    -keyalg RSA \
+    -storetype JKS \
+    -keysize 2048 \
+    -validity 365 \
+    -keystore ./conf/hive/thriftserver.jks \
+    -storepass thriftserver \
+    -keypass thriftserver \
+    -ext SAN=IP:100.84.28.115,DNS:thriftserver \
+    -dname "CN=hive.local, OU=Data, O=MyOrg, L=HCM, ST=VN, C=VN"
+"""
+
+[tasks.start_cluster]
+description = "Start the Hadoop cluster"
+run = "docker compose -f docker-compose-cluster.yml -p cluster up"
+
+[tasks.start_cluster_d]
+description = "Start the Hadoop cluster in detached mode"
+run = "docker compose -f docker-compose-cluster.yml -p cluster up -d"
+
+[tasks.stop_cluster]
+description = "Stop the Hadoop cluster and remove volumes"
+run = "docker compose -p cluster down -v"
+
+[tasks.start_client]
+description = "Start the client container"
+run = "docker compose -f docker-compose-client.yml -p client up"
+
+[tasks.stop_client]
+description = "Stop the client container and remove volumes"
+run = "docker compose -p client down -v"

@@ -7,7 +7,7 @@
 /services/worker3/
 /services/historyserver/
 /services/metastore/
-/services/hiveserver2/
+/services/thriftserver/
 yarn/
 .DS_Store
 baseimage/.DS_Store

@@ -34,7 +34,7 @@
 # This value will be overridden by an Xmx setting specified in either
 # HADOOP_OPTS and/or YARN_RESOURCEMANAGER_OPTS.
 # Default is the same as HADOOP_HEAPSIZE_MAX
-export YARN_RESOURCEMANAGER_HEAPSIZE=500
+export YARN_RESOURCEMANAGER_HEAPSIZE=${HADOOP_HEAPSIZE_MAX}
 
 # Specify the JVM options to be used when starting the ResourceManager.
 # These options will be appended to the options specified as HADOOP_OPTS
@@ -48,7 +48,7 @@ export YARN_RESOURCEMANAGER_HEAPSIZE=500
 # export YARN_RESOURCEMANAGER_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
 #
 # c) Set garbage collection logs from hadoop-env.sh
-# export YARN_RESOURCE_MANAGER_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
+export YARN_RESOURCE_MANAGER_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
 #
 # d) ... or set them directly
 # export YARN_RESOURCEMANAGER_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
@@ -68,14 +68,14 @@ export YARN_RESOURCEMANAGER_HEAPSIZE=500
 # This value will be overridden by an Xmx setting specified in either
 # HADOOP_OPTS and/or YARN_NODEMANAGER_OPTS.
 # Default is the same as HADOOP_HEAPSIZE_MAX.
-export YARN_NODEMANAGER_HEAPSIZE=500
+export YARN_NODEMANAGER_HEAPSIZE=${HADOOP_HEAPSIZE_MAX}
 
 # Specify the JVM options to be used when starting the NodeManager.
 # These options will be appended to the options specified as HADOOP_OPTS
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # a) Enable NodeManager audit logging
-# export YARN_NODEMANAGER_OPTS="-Dnm.audit.logger=INFO,NMAUDIT"
+export YARN_NODEMANAGER_OPTS="-Dnm.audit.logger=INFO,NMAUDIT"
 #
 # See ResourceManager for some examples
 #
@@ -147,13 +147,35 @@ export YARN_NODEMANAGER_HEAPSIZE=500
 # Router specific parameters
 ###
 
+# Specify the max heapsize for the Router.  If no units are
+# given, it will be assumed to be in MB.
+# Default is the same as HADOOP_HEAPSIZE_MAX
+#export YARN_ROUTER_HEAPSIZE=
+
 # Specify the JVM options to be used when starting the Router.
 # These options will be appended to the options specified as HADOOP_OPTS
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # See ResourceManager for some examples
 #
-#export YARN_ROUTER_OPTS=
+#export YARN_ROUTER_OPTS="-Drouter.audit.logger=INFO,ROUTERAUDIT"
+
+###
+# Global Policy Generator specific parameters
+###
+
+# Specify the max heapsize for the Global Policy Generator.  If no units are
+# given, it will be assumed to be in MB.
+# Default is the same as HADOOP_HEAPSIZE_MAX
+#export YARN_GLOBALPOLICYGENERATOR_HEAPSIZE=
+
+# Specify the JVM options to be used when starting the GPG.
+# These options will be appended to the options specified as HADOOP_OPTS
+# and therefore may override any similar flags set in HADOOP_OPTS
+#
+# See ResourceManager for some examples
+#
+#export YARN_GLOBALPOLICYGENERATOR_OPTS=
 
 ###
 # Registry DNS specific parameters
