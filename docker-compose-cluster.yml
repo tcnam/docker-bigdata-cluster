@@ -8,6 +8,7 @@ services:
       - namenode:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       - "9870:9870" # hdfs WebUI
@@ -25,6 +26,7 @@ services:
       - resourcemanager:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
@@ -41,6 +43,7 @@ services:
       - secondarynamenode:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
@@ -58,6 +61,7 @@ services:
       - worker1:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -77,6 +81,7 @@ services:
       - worker2:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -96,6 +101,7 @@ services:
       - worker3:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -118,6 +124,7 @@ services:
       - historyserver:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -156,6 +163,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - namenode
@@ -184,7 +192,8 @@ services:
   #     - config_hadoop:/opt/hadoop/etc/hadoop
   #     - config_spark:/opt/spark/conf 
   #     - workspace:/workspace    
-  #     - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      # - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      # - ./setupScripts/entrypoint.sh:/entrypoint.sh
   #   depends_on:
   #     - namenode
   #     - secondarynamenode
@@ -200,6 +209,23 @@ services:
   #   networks:
   #     hadoop_network:
   #       ipv4_address: ${edgenode_ip}
+  krb5kdc:
+      image: hadoop_base:1.0
+      container_name: krb5kdc
+      hostname: krb5kdc
+      user: root
+      volumes:
+        - krb5kdc:/var/lib/krb5kdc
+        - config_krb5server:/etc/krb5kdc
+        - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      # Kerberos uses Port 88 (UDP/TCP) and 749 for Admin
+      ports:
+        - "88:88"
+        - "749:749"
+      entrypoint: ["/entrypoint.sh", "krb5kdc"]
+      networks:
+        hadoop_network:
+          ipv4_address: ${krb5kdc_ip}
 
 volumes:
   namenode:
@@ -256,6 +282,12 @@ volumes:
       o: bind
       type: none
       device: ./services/thriftserver
+  krb5kdc:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./services/krb5kdc
   # workspace:
   #   driver: local
   #   driver_opts:
@@ -280,6 +312,12 @@ volumes:
       o: bind
       type: none
       device: ./conf/hive
+  config_krb5server:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/krb5/server
 
 networks:
   hadoop_network:

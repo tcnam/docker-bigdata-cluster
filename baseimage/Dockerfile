@@ -15,6 +15,11 @@ RUN apt-get update && \
     apt-get install -y netcat && \
     apt-get install -y gnupg && \
     apt-get install -y libsnappy-dev && \
+    apt-get install -y krb5-user && \
+    apt-get install -y libkrb5-3 && \
+    apt-get install -y krb5-kdc && \
+    apt-get install -y krb5-admin-server && \
+    apt-get install -y haveged && \
     rm -rf /var/lib/apt/lists/*
 
 # Set JAVA_HOME environment variable
@@ -31,6 +36,10 @@ RUN mv /usr/lib/jvm/java-8-openjdk-${ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 ENV JRE_HOME=${JAVA_HOME}/jre
 ENV PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$PATH
+
+# Set Kerberos environment variables
+ENV KRB5_CONFIG=/etc/krb5.conf
+ENV KRB5_KDC_PROFILE=/etc/krb5kdc/kdc.conf
 
 # Setup user for hadoop cluster
 RUN groupadd hadoop && \
@@ -138,6 +147,7 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export POSTGRES_DB=metastore' >> /etc/profile && \
     echo 'export POSTGRES_USER=hive' >> /etc/profile && \
     echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
+    echo 'export KRB5_CONFIG=/etc/krb5.conf' >> /etc/profile && \
     echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH' >> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 

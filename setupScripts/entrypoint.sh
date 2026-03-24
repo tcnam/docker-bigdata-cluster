@@ -163,7 +163,6 @@ elif [ "$NODE_TYPE" == "edgenode" ]; then
         echo "Waiting for HDFS to leave safe mode..."
         sleep 3
     done
-    tail -f /dev/null
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
     exit 1

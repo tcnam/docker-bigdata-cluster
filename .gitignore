@@ -8,6 +8,7 @@
 /services/historyserver/
 /services/metastore/
 /services/thriftserver/
+/services/krb5kdc/
 yarn/
 .DS_Store
 baseimage/.DS_Store
