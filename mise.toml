@@ -13,33 +13,13 @@ IMAGE_ARCH = "{% if os() == 'macos' %}arm64{% else %}amd64{% endif %}"
 
 [tasks.build_image]
 description = "Build base image with version args"
-run = """
-{% if os() == "windows" %}{% set slash = "`" %}{% else %}{% set slash = "\\" %}{% endif -%}
-docker buildx build --file ./baseimage/Dockerfile {{slash}}
-  --no-cache {{slash}}
-  --platform {{ env.DOCKER_PLATFORM }} {{slash}}
-  --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} {{slash}}
-  --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} {{slash}}
-  --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} {{slash}}
-  --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} {{slash}}
-  -t hadoop_base:1.0 .
-"""
+run = "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
 
 [tasks.rebuild_image]
 description = "Build base image with version args"
 run = [
   "docker image rm hadoop_base:1.0",
-  """
-  {% if os() == "windows" %}{% set slash = "`" %}{% else %}{% set slash = "\\" %}{% endif -%}
-  docker buildx build --file ./baseimage/Dockerfile {{slash}}
-    --no-cache {{slash}}
-    --platform {{ env.DOCKER_PLATFORM }} {{slash}}
-    --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} {{slash}}
-    --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} {{slash}}
-    --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} {{slash}}
-    --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} {{slash}}
-    -t hadoop_base:1.0 .
-  """
+  "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
 ]
 
 
