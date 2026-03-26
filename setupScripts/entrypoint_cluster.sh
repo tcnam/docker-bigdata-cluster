@@ -102,30 +102,32 @@ if [ "$NODE_TYPE" == "namenode" ]; then
     # Ownership
     su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark"
     
-    # Check if the /spark/jars exists and is not empty
-    if [ $(hdfs dfs -count /spark/jars | awk '{print $2}') -gt 0 ]; then
-        echo "HDFS directory /spark/jars is either empty or does not exist. Not performing put."
+    # Count local jars
+    LOCAL_COUNT=$(ls -1 $SPARK_HOME/jars/*.jar | wc -l)
+
+    # Count HDFS jars (using -ls and grep to avoid directory headers)
+    HDFS_COUNT=$(hdfs dfs -ls /spark/jars/*.jar 2>/dev/null | grep '^-' | wc -l)
+
+    echo "Local JAR count: $LOCAL_COUNT"
+    echo "HDFS JAR count: $HDFS_COUNT"
+
+    # Logic: If HDFS is empty OR counts do not match, refresh the directory
+    if [ "$HDFS_COUNT" -eq 0 ]; then
+        echo "HDFS directory /spark/jars is empty. Performing initial put."
+        su - hdfs -c "hdfs dfs -mkdir -p /spark/jars && hdfs dfs -put $SPARK_HOME/jars/*.jar /spark/jars"
+    elif [ "$LOCAL_COUNT" -ne "$HDFS_COUNT" ]; then
+        echo "Count mismatch ($LOCAL_COUNT vs $HDFS_COUNT). Deleting and refreshing /spark/jars..."
+        # Clear and Re-put
+        su - hdfs -c "hdfs dfs -rm -f /spark/jars/*.jar && hdfs dfs -put $SPARK_HOME/jars/*.jar /spark/jars"
+        echo "Sync complete."
     else
-        echo "HDFS directory /spark/jars exists and is not empty. Proceeding with put."
-        su - hdfs -c "hdfs dfs -put $SPARK_HOME/jars/* /spark/jars"
+        echo "HDFS /spark/jars is already in sync with local $SPARK_HOME/jars. No action needed."
     fi
 
     # --- Spark Setup inside the namenode block ---
     su - hdfs -c "hdfs dfs -mkdir -p /spark/logs /spark/jars /user/spark"
     su - hdfs -c "hdfs dfs -chmod 1777 /spark/logs"
     su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark /user/spark"
-    
-    echo "Checking Spark JARs..."
-    # Get the count safely; if it fails, default to 0
-    JAR_COUNT=$(su - hdfs -c "hdfs dfs -count /spark/jars" 2>/dev/null | awk '{print $2}')
-    JAR_COUNT=${JAR_COUNT:-0}
-
-    if [ "$JAR_COUNT" -eq 0 ]; then
-        echo "HDFS /spark/jars is empty. Uploading JARs..."
-        su - hdfs -c "hdfs dfs -put $SPARK_HOME/jars/* /spark/jars"
-    else
-        echo "Spark JARs already detected ($JAR_COUNT files). Skipping upload."
-    fi
 
     echo "Finish creating folders"
 
@@ -230,9 +232,12 @@ elif [ "$NODE_TYPE" == "thriftserver" ]; then
 
     # 5. Start Spark Thrift Server
     echo "Starting Spark Thrift Server..."
-    $SPARK_HOME/sbin/start-thriftserver.sh \
-    --master yarn \
-    --deploy-mode client
+    $SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client
+
+    # 6. Start Spark Connect
+    echo "Starting Spark Connect Server..."
+    $SPARK_HOME/sbin/start-connect-server.sh
+
 elif [ "$NODE_TYPE" == "krb5kdc" ]; then
     echo "Starting KDC Node..."
     

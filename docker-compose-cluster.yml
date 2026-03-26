@@ -12,6 +12,10 @@ services:
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     ports:
       - "9870:9870" # hdfs WebUI
+    deploy:
+          resources:
+            limits:
+              memory: 1536M
     entrypoint: ["/entrypoint_cluster.sh", "namenode"]
     networks:
       hadoop_network:
@@ -30,6 +34,10 @@ services:
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
+    deploy:
+          resources:
+            limits:
+              memory: 1536M
     entrypoint: ["/entrypoint_cluster.sh", "resourcemanager"]
     networks:
       hadoop_network:
@@ -47,6 +55,10 @@ services:
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
+    deploy:
+          resources:
+            limits:
+              memory: 1024M
     entrypoint: ["/entrypoint_cluster.sh", "secondarynamenode"]
     networks:
       hadoop_network:
@@ -67,6 +79,10 @@ services:
       - namenode
       - resourcemanager
       - secondarynamenode
+    deploy:
+          resources:
+            limits:
+              memory: 2048M
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -87,6 +103,10 @@ services:
       - namenode
       - resourcemanager
       - secondarynamenode
+    deploy:
+          resources:
+            limits:
+              memory: 2048M
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -107,6 +127,10 @@ services:
       - namenode
       - resourcemanager
       - secondarynamenode
+    deploy:
+          resources:
+            limits:
+              memory: 2048M
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -133,6 +157,10 @@ services:
       - worker1
       - worker2
       - worker3
+    deploy:
+          resources:
+            limits:
+              memory: 1024M
     entrypoint: ["/entrypoint_cluster.sh", "historyserver"]
     networks:
       hadoop_network:
@@ -149,6 +177,10 @@ services:
       - metastore:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    deploy:
+          resources:
+            limits:
+              memory: 512M
     networks:
       hadoop_network:
         ipv4_address: ${cluster_metastore_ip}
@@ -176,8 +208,14 @@ services:
       - metastore
     ports:
       - "4040:4040"
+      - "4041:4041"
+      - "15002:15002"
       - "10000:10000"
       - "10002:10002"
+    deploy:
+          resources:
+            limits:
+              memory: 2560M
     command: ["/entrypoint_cluster.sh", "thriftserver"]
     networks:
       hadoop_network:
@@ -222,6 +260,10 @@ services:
       ports:
         - "88:88"
         - "749:749"
+      deploy:
+              resources:
+                limits:
+                  memory: 256M
       entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
       networks:
         hadoop_network:
