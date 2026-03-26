@@ -8,7 +8,7 @@ services:
       - namenode:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     ports:
       - "9870:9870" # hdfs WebUI
@@ -30,7 +30,7 @@ services:
       - resourcemanager:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
@@ -51,7 +51,7 @@ services:
       - secondarynamenode:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
@@ -73,7 +73,7 @@ services:
       - worker1:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
@@ -97,7 +97,7 @@ services:
       - worker2:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
@@ -121,7 +121,7 @@ services:
       - worker3:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
@@ -148,7 +148,7 @@ services:
       - historyserver:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
@@ -195,7 +195,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
-      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
@@ -230,7 +230,7 @@ services:
   #     - config_hadoop:/opt/hadoop/etc/hadoop
   #     - config_spark:/opt/spark/conf 
   #     - workspace:/workspace    
-      # - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      # - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
       # - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
   #   depends_on:
   #     - namenode
@@ -341,25 +341,25 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./conf/hadoop
+      device: ./conf/cluster/hadoop
   config_spark:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./conf/spark
+      device: ./conf/cluster/spark
   config_hive:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./conf/hive
+      device: ./conf/cluster/hive
   config_krb5server:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./conf/krb5/server
+      device: ./conf/cluster/krb5/server
 
 networks:
   hadoop_network:

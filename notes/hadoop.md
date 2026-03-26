@@ -57,6 +57,12 @@ Data Processing (YARN):
 
 ### 1.1 Các thư mục 
 
+3rd jars:
+- delta-spark_2.12-3.3.2
+- delta-storage-3.3.2
+- spark-connect_2.12-3.5.5
+- spark-connect-common_2.12-3.5.5
+
 
 
 
