@@ -11,23 +11,43 @@ HIVE_VERSION = "3.1.3"
 DOCKER_PLATFORM = "{% if os() == 'macos' %}linux/arm64{% else %}linux/amd64{% endif %}"
 IMAGE_ARCH = "{% if os() == 'macos' %}arm64{% else %}amd64{% endif %}"
 
-[tasks.create_dir]
+[tasks.cluster_credir]
 description = "Create service directories"
 run = '''
 {% if os() == "windows" -%}
-  mkdir .\services\namenode .\services\secondarynamenode .\services\resourcemanager .\services\worker1 .\services\worker2 .\services\worker3 .\services\historyserver .\services\metastore .\services\thriftserver .\services\krb5kdc
+  mkdir .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\thriftserver .\services\cluster\krb5kdc
 {%- else -%}
-  mkdir -p ./services/namenode ./services/secondarynamenode ./services/resourcemanager ./services/worker1 ./services/worker2 ./services/worker3 ./services/historyserver ./services/metastore ./services/thriftserver ./services/krb5kdc
+  mkdir -p ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/thriftserver ./services/cluster/krb5kdc
 {%- endif %}
 '''
 
-[tasks.delete_dir]
+[tasks.cluster_deldir]
 description = "Remove service directories"
 run = '''
 {% if os() == "windows" -%}
-  rmdir /S /Q .\services\namenode .\services\secondarynamenode .\services\resourcemanager .\services\worker1 .\services\worker2 .\services\worker3 .\services\historyserver .\services\metastore .\services\thriftserver .\services\krb5kdc
+  rmdir /S /Q .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\thriftserver .\services\cluster\krb5kdc
 {%- else -%}
-  rm -rf ./services/namenode ./services/secondarynamenode ./services/resourcemanager ./services/worker1 ./services/worker2 ./services/worker3 ./services/historyserver ./services/metastore ./services/thriftserver ./services/krb5kdc
+  rm -rf ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/thriftserver ./services/cluster/krb5kdc
+{%- endif %}
+'''
+
+[tasks.local_credir]
+description = "Create service directories"
+run = '''
+{% if os() == "windows" -%}
+  mkdir .\services\local\namenode .\services\local\worker .\services\local\resourcemanager .\services\local\metastore
+{%- else -%}
+  mkdir -p ./services/local/namenode ./services/local/worker ./services/local/resourcemanager ./services/local/metastore
+{%- endif %}
+'''
+
+[tasks.local_deldir]
+description = "Remove service directories"
+run = '''
+{% if os() == "windows" -%}
+  rmdir /S /Q .\services\local\namenode .\services\local\worker .\services\local\resourcemanager .\services\local\metastore
+{%- else -%}
+  rm -rf ./services/local/namenode ./services/local/worker ./services/local/resourcemanager ./services/local/metastore
 {%- endif %}
 '''
 
@@ -71,13 +91,13 @@ run = "docker compose -f docker-compose-cluster.yml -p cluster up -d"
 description = "Stop the Hadoop cluster and remove volumes"
 run = "docker compose -p cluster down -v"
 
-[tasks."docker:start_client"]
-description = "Start the client container"
-run = "docker compose -f docker-compose-client.yml -p client up"
+[tasks."docker:start_local"]
+description = "Start the local container"
+run = "docker compose -f docker-compose-local.yml -p local up"
 
-[tasks."docker:stop_client"]
-description = "Stop the client container and remove volumes"
-run = "docker compose -p client down -v"
+[tasks."docker:stop_local"]
+description = "Stop the local container and remove volumes"
+run = "docker compose -p local down -v"
 
 # Podman commands
 

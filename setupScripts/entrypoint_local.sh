@@ -111,17 +111,8 @@ if [ "$NODE_TYPE" == "namenode" ]; then
 
     echo "Finish creating folders"
 
-elif [ "$NODE_TYPE" == "secondarynamenode" ]; then
-    su - hdfs -c "hdfs --daemon start secondarynamenode"
-
 elif [ "$NODE_TYPE" == "resourcemanager" ]; then
     su - yarn -c "yarn --daemon start resourcemanager"
-
-elif [ "$NODE_TYPE" == "worker" ]; then 
-    su - hdfs -c "hdfs --daemon start datanode"
-    su - yarn -c "yarn --daemon start nodemanager"
-
-elif [ "$NODE_TYPE" == "historyserver" ]; then
     until HADOOP_USER_NAME=hdfs hdfs dfsadmin -fs hdfs://namenode:9000 -safemode get 2>/dev/null | grep -q 'OFF'; do
         echo "Waiting for HDFS to leave safe mode..."
         sleep 3
@@ -160,20 +151,11 @@ elif [ "$NODE_TYPE" == "historyserver" ]; then
     echo "Starting Spark History Server..."
     su - spark -c "${SPARK_HOME}/sbin/start-history-server.sh"
 
-
-elif [ "$NODE_TYPE" == "thriftserver" ]; then
     # 1. Wait for Postgres (The DB for the Metastore)
     until nc -z "metastore" 5432; do
         echo "Waiting for Postgres database on metastore:5432..."
         sleep 2
     done
-
-    # 2. Wait for HDFS (Dependency)
-    until HADOOP_USER_NAME=hdfs hdfs dfsadmin -fs hdfs://namenode:9000 -safemode get 2>/dev/null | grep -q 'OFF'; do
-        echo "Waiting for HDFS to leave safe mode..."
-        sleep 3
-    done
-    echo "HDFS is UP and out of Safe Mode."
 
     # 3. Schema Initialization
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -195,25 +177,17 @@ elif [ "$NODE_TYPE" == "thriftserver" ]; then
         echo "Waiting for Hive Metastore service to bind to port 9083..."
         sleep 2
     done
-
-    echo "Waiting for Spark JARs to be fully synced from NameNode..."
-    until check_spark_jars_synced; do
-        echo "JAR count mismatch or HDFS not ready. Retrying in 5s..."
-        sleep 5
-    done
-    echo "Spark JARs are synced! Proceeding with service start."
-
     # 5. Start Spark Thrift Server
     echo "Starting Spark Thrift Server..."
     $SPARK_HOME/sbin/start-thriftserver.sh \
     --master yarn \
     --deploy-mode client
 
-elif [ "$NODE_TYPE" == "edgenode" ]; then
-    until hdfs dfsadmin -safemode get | grep -q 'OFF'; do
-        echo "Waiting for HDFS to leave safe mode..."
-        sleep 3
-    done
+
+elif [ "$NODE_TYPE" == "worker" ]; then 
+    su - hdfs -c "hdfs --daemon start datanode"
+    su - yarn -c "yarn --daemon start nodemanager"
+    
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
     exit 1

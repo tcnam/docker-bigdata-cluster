@@ -26,7 +26,7 @@ RUN apt-get update && \
 ARG ARCHITECTURE
 
 COPY baseimage/files/ /opt/
-# COPY baseimage/3rdjars/ /opt/3rdjars/
+COPY baseimage/3rdjars/ /opt/3rdjars/
 
 # 1. Rename the directory to a generic name
 # 2. Set JAVA_HOME and JRE_HOME
@@ -43,6 +43,9 @@ ENV KRB5_KDC_PROFILE=/etc/krb5kdc/kdc.conf
 
 # Setup user for hadoop cluster
 RUN groupadd hadoop && \
+    # Add existing root to the group and set password
+    usermod -aG hadoop root && echo "root:root" | chpasswd && \
+    # Create the other NEW users
     useradd -m -g hadoop yarn    && echo "yarn:yarn"     | chpasswd && \
     useradd -m -g hadoop hdfs    && echo "hdfs:hdfs"     | chpasswd && \
     useradd -m -g hadoop mapred  && echo "mapred:mapred" | chpasswd && \
@@ -50,6 +53,12 @@ RUN groupadd hadoop && \
     useradd -m -g hadoop hive    && echo "hive:hive"     | chpasswd 
 
 # Create necessary dir
+# For Kerberos
+RUN mkdir -p /var/lib/krb5kdc/logs && \
+    mkdir -p /var/data/hadoop/keytabs && \
+    chown root:hadoop /var/data/hadoop/keytabs && \
+    chmod 750 /var/data/hadoop/keytabs
+
 # For hdfs only
 RUN mkdir -p /var/data/hadoop/hdfs/nn && \
     mkdir -p /var/data/hadoop/hdfs/snn && \
@@ -105,6 +114,9 @@ ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
 
 # Enable spark.shuffle.service
 RUN cp ${SPARK_HOME}/yarn/spark-${SPARK_VERSION}-yarn-shuffle.jar $HADOOP_HOME/share/hadoop/yarn/lib/
+
+# Enable delta lake in spark
+RUN mv /opt/3rdjars/spark/*.jar ${SPARK_HOME}/jars/
 
 # ENV PYSPARK_PYTHON=python3
 # ENV PYSPARK_PATH=usr/bin/python3

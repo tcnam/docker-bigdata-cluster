@@ -9,13 +9,13 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     ports:
       - "9870:9870" # hdfs WebUI
-    entrypoint: ["/entrypoint.sh", "namenode"]
+    entrypoint: ["/entrypoint_cluster.sh", "namenode"]
     networks:
       hadoop_network:
-        ipv4_address: ${namenode_ip}
+        ipv4_address: ${cluster_namenode_ip}
   
   resourcemanager:
     image: hadoop_base:1.0
@@ -27,13 +27,13 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     ports:
       - "8088:8088" #Resource Manager WebUI
-    entrypoint: ["/entrypoint.sh", "resourcemanager"]
+    entrypoint: ["/entrypoint_cluster.sh", "resourcemanager"]
     networks:
       hadoop_network:
-        ipv4_address: ${resourcemanager_ip}
+        ipv4_address: ${cluster_resourcemanager_ip}
   secondarynamenode:
     image: hadoop_base:1.0
     container_name: secondarynamenode
@@ -44,13 +44,13 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     # ports:
     #   - "50090:50090" #secondary namenode metadata service
-    entrypoint: ["/entrypoint.sh", "secondarynamenode"]
+    entrypoint: ["/entrypoint_cluster.sh", "secondarynamenode"]
     networks:
       hadoop_network:
-        ipv4_address: ${secondarynamenode_ip}
+        ipv4_address: ${cluster_secondarynamenode_ip}
 
   worker1:
     image: hadoop_base:1.0
@@ -62,15 +62,15 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
       - resourcemanager
       - secondarynamenode
-    entrypoint: ["/entrypoint.sh", "worker"]
+    entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
-        ipv4_address: ${worker1_ip}
+        ipv4_address: ${cluster_worker1_ip}
 
   worker2:
     image: hadoop_base:1.0
@@ -82,15 +82,15 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
       - resourcemanager
       - secondarynamenode
-    entrypoint: ["/entrypoint.sh", "worker"]
+    entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
-        ipv4_address: ${worker2_ip}
+        ipv4_address: ${cluster_worker2_ip}
 
   worker3:
     image: hadoop_base:1.0
@@ -102,15 +102,15 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
       - resourcemanager
       - secondarynamenode
-    entrypoint: ["/entrypoint.sh", "worker"]
+    entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
-        ipv4_address: ${worker3_ip}
+        ipv4_address: ${cluster_worker3_ip}
   
   historyserver:
     image: hadoop_base:1.0
@@ -125,7 +125,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
       - secondarynamenode
@@ -133,10 +133,10 @@ services:
       - worker1
       - worker2
       - worker3
-    entrypoint: ["/entrypoint.sh", "historyserver"]
+    entrypoint: ["/entrypoint_cluster.sh", "historyserver"]
     networks:
       hadoop_network:
-        ipv4_address: ${historyserver_ip}
+        ipv4_address: ${cluster_historyserver_ip}
 
   metastore:
     image: postgres:13-alpine
@@ -151,7 +151,7 @@ services:
       - "5432:5432"
     networks:
       hadoop_network:
-        ipv4_address: ${metastore_ip}
+        ipv4_address: ${cluster_metastore_ip}
 
   thriftserver:
     image: hadoop_base:1.0
@@ -164,7 +164,7 @@ services:
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
       - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
       - namenode
       - secondarynamenode
@@ -178,10 +178,10 @@ services:
       - "4040:4040"
       - "10000:10000"
       - "10002:10002"
-    command: ["/entrypoint.sh", "thriftserver"]
+    command: ["/entrypoint_cluster.sh", "thriftserver"]
     networks:
       hadoop_network:
-        ipv4_address: ${thriftserver_ip}
+        ipv4_address: ${cluster_thriftserver_ip}
 
   # edgenode:
   #   image: hadoop_base:1.0
@@ -193,7 +193,7 @@ services:
   #     - config_spark:/opt/spark/conf 
   #     - workspace:/workspace    
       # - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
-      # - ./setupScripts/entrypoint.sh:/entrypoint.sh
+      # - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
   #   depends_on:
   #     - namenode
   #     - secondarynamenode
@@ -205,10 +205,10 @@ services:
   #   ports:
   #     # - "2222:22"
   #     - "4040:4040"
-  #   command: ["/entrypoint.sh", "edgenode"]
+  #   command: ["/entrypoint_cluster.sh", "edgenode"]
   #   networks:
   #     hadoop_network:
-  #       ipv4_address: ${edgenode_ip}
+  #       ipv4_address: ${cluster_edgenode_ip}
   krb5kdc:
       image: hadoop_base:1.0
       container_name: krb5kdc
@@ -217,15 +217,15 @@ services:
       volumes:
         - krb5kdc:/var/lib/krb5kdc
         - config_krb5server:/etc/krb5kdc
-        - ./setupScripts/entrypoint.sh:/entrypoint.sh
+        - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
       # Kerberos uses Port 88 (UDP/TCP) and 749 for Admin
       ports:
         - "88:88"
         - "749:749"
-      entrypoint: ["/entrypoint.sh", "krb5kdc"]
+      entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
       networks:
         hadoop_network:
-          ipv4_address: ${krb5kdc_ip}
+          ipv4_address: ${cluster_krb5kdc_ip}
 
 volumes:
   namenode:
@@ -233,61 +233,61 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ./services/namenode
+      device: ./services/cluster/namenode
   secondarynamenode:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/secondarynamenode
+      device: ./services/cluster/secondarynamenode
   resourcemanager:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/resourcemanager
+      device: ./services/cluster/resourcemanager
   historyserver:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/historyserver
+      device: ./services/cluster/historyserver
   worker1:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/worker1
+      device: ./services/cluster/worker1
   worker2:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/worker2
+      device: ./services/cluster/worker2
   worker3:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/worker3
+      device: ./services/cluster/worker3
   metastore:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/metastore
+      device: ./services/cluster/metastore
   thriftserver:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/thriftserver
+      device: ./services/cluster/thriftserver
   krb5kdc:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/krb5kdc
+      device: ./services/cluster/krb5kdc
   # workspace:
   #   driver: local
   #   driver_opts:

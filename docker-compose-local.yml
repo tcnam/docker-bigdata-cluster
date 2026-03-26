@@ -1,0 +1,133 @@
+services:
+  namenode:
+    image: hadoop_base:1.0
+    container_name: namenode
+    hostname: namenode
+    user: root
+    volumes:
+      - namenode:/var/data/hadoop
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
+    ports:
+      - "9870:9870" # hdfs WebUI
+    entrypoint: ["/entrypoint_local.sh", "namenode"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${local_namenode_ip}
+  
+  resourcemanager:
+    image: hadoop_base:1.0
+    container_name: resourcemanager
+    hostname: resourcemanager
+    user: root
+    volumes:
+      - resourcemanager:/var/data/hadoop
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
+    ports:
+      - "8088:8088" #Resource Manager WebUI
+      - "18080:18080" #Spark History Server UI
+      - "19888:19888" #Mapreduce History Server UI
+      - "4040:4040"
+      - "10000:10000"
+      - "10002:10002"
+    entrypoint: ["/entrypoint_local.sh", "resourcemanager"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${local_resourcemanager_ip}
+
+  worker:
+    image: hadoop_base:1.0
+    container_name: worker
+    hostname: worker
+    user: root
+    volumes:
+      - worker:/var/data/hadoop
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf
+      - ./conf/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
+    depends_on:
+      - namenode
+      - resourcemanager
+    entrypoint: ["/entrypoint_local.sh", "worker"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${local_worker_ip}
+
+  metastore:
+    image: postgres:13-alpine
+    container_name: metastore
+    environment:
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+    volumes:
+      - metastore:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      hadoop_network:
+        ipv4_address: ${local_metastore_ip}
+
+volumes:
+  namenode:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./services/local/namenode
+  resourcemanager:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./services/local/resourcemanager
+  worker:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./services/local/worker
+  metastore:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./services/local/metastore
+  config_hadoop:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/hadoop
+  config_spark:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/spark
+  config_hive:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/hive
+  config_krb5server:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/krb5/server
+
+networks:
+  hadoop_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+        
