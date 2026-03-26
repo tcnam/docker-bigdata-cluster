@@ -11,19 +11,6 @@ HIVE_VERSION = "3.1.3"
 DOCKER_PLATFORM = "{% if os() == 'macos' %}linux/arm64{% else %}linux/amd64{% endif %}"
 IMAGE_ARCH = "{% if os() == 'macos' %}arm64{% else %}amd64{% endif %}"
 
-[tasks.build_image]
-description = "Build base image with version args"
-run = "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
-
-[tasks.rebuild_image]
-description = "Build base image with version args"
-run = [
-  "docker image rm hadoop_base:1.0",
-  "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
-]
-
-
-
 [tasks.create_dir]
 description = "Create service directories"
 run = '''
@@ -60,22 +47,59 @@ keytool -genkeypair \
     -dname "CN=hive.local, OU=Data, O=MyOrg, L=HCM, ST=VN, C=VN"
 """
 
-[tasks.start_cluster]
+# Docker commannds
+[tasks."docker:build"]
+description = "Build base image with version args"
+run = "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
+
+[tasks."docker:rebuild"]
+description = "Build base image with version args"
+run = [
+  "docker image rm hadoop_base:1.0",
+  "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
+]
+
+[tasks."docker:start_cluster"]
 description = "Start the Hadoop cluster"
 run = "docker compose -f docker-compose-cluster.yml -p cluster up"
 
-[tasks.start_cluster_d]
+[tasks."docker:start_cluster_d"]
 description = "Start the Hadoop cluster in detached mode"
 run = "docker compose -f docker-compose-cluster.yml -p cluster up -d"
 
-[tasks.stop_cluster]
+[tasks."docker:stop_cluster"]
 description = "Stop the Hadoop cluster and remove volumes"
 run = "docker compose -p cluster down -v"
 
-[tasks.start_client]
+[tasks."docker:start_client"]
 description = "Start the client container"
 run = "docker compose -f docker-compose-client.yml -p client up"
 
-[tasks.stop_client]
+[tasks."docker:stop_client"]
 description = "Stop the client container and remove volumes"
 run = "docker compose -p client down -v"
+
+# Podman commands
+
+# [tasks."podman:build"]
+# description = "Build base image with version args"
+# run = "podman buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
+
+# [tasks."podman:rebuild"]
+# description = "Build base image with version args"
+# run = [
+#   "podman image rm hadoop_base:1.0",
+#   "podman buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
+# ]
+
+# [tasks."podman:start_cluster"]
+# description = "Start the Hadoop cluster"
+# run = "podman compose -f docker-compose-cluster.yml -p cluster up"
+
+# [tasks."podman:start_cluster_d"]
+# description = "Start the Hadoop cluster in detached mode"
+# run = "podman compose -f docker-compose-cluster.yml -p cluster up -d"
+
+# [tasks."podman:stop_cluster"]
+# description = "Stop the Hadoop cluster and remove volumes"
+# run = "podman compose -p cluster down -v"

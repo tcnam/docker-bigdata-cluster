@@ -1,5 +1,21 @@
 #!/bin/bash
 
+check_spark_jars_synced() {
+    # 1. Count local files
+    local LOCAL_COUNT=$(ls -1 "$SPARK_HOME/jars" 2>/dev/null | wc -l)
+    
+    # 2. Count HDFS files (using HADOOP_USER_NAME and explicit NameNode URI)
+    local HDFS_COUNT=$(HADOOP_USER_NAME=hdfs hdfs dfs -fs hdfs://namenode:9000 -count /spark/jars 2>/dev/null | awk '{print $2}')
+    HDFS_COUNT=${HDFS_COUNT:-0}
+
+    # 3. Return 0 (True) only if they match and are not zero
+    if [ "$LOCAL_COUNT" -eq "$HDFS_COUNT" ] && [ "$LOCAL_COUNT" -gt 0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 NODE_TYPE=$1
 
 echo "NODE TYPE: $NODE_TYPE"
@@ -27,8 +43,7 @@ if [ "$NODE_TYPE" == "namenode" ]; then
     su - hdfs -c "hdfs dfs -mkdir -p /user/mapred"
     su - hdfs -c "hdfs dfs -chown -R mapred:supergroup /user/mapred"
 
-    su - hdfs -c "hdfs dfs -mkdir -p /mr-history/tmp"
-    su - hdfs -c "hdfs dfs -mkdir -p /mr-history/done"
+    su - hdfs -c "hdfs dfs -mkdir -p /mr-history/tmp /mr-history/done"
     su - hdfs -c "hdfs dfs -chmod -R 1777 /mr-history/tmp"
     su - hdfs -c "hdfs dfs -chmod -R 750 /mr-history/done"
     su - hdfs -c "hdfs dfs -chown -R mapred:supergroup /mr-history"
@@ -76,10 +91,23 @@ if [ "$NODE_TYPE" == "namenode" ]; then
         echo "HDFS directory /spark/jars exists and is not empty. Proceeding with put."
         su - hdfs -c "hdfs dfs -put $SPARK_HOME/jars/* /spark/jars"
     fi
-    # su - hdfs -c "hdfs dfs -chmod 775 /spark"
-    su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark"
-    su - hdfs -c "hdfs dfs -mkdir -p /user/spark"
-    su - hdfs -c "hdfs dfs -chown -R spark:supergroup /user/spark"
+
+    # --- Spark Setup inside the namenode block ---
+    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs /spark/jars /user/spark"
+    su - hdfs -c "hdfs dfs -chmod 1777 /spark/logs"
+    su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark /user/spark"
+    
+    echo "Checking Spark JARs..."
+    # Get the count safely; if it fails, default to 0
+    JAR_COUNT=$(su - hdfs -c "hdfs dfs -count /spark/jars" 2>/dev/null | awk '{print $2}')
+    JAR_COUNT=${JAR_COUNT:-0}
+
+    if [ "$JAR_COUNT" -eq 0 ]; then
+        echo "HDFS /spark/jars is empty. Uploading JARs..."
+        su - hdfs -c "hdfs dfs -put $SPARK_HOME/jars/* /spark/jars"
+    else
+        echo "Spark JARs already detected ($JAR_COUNT files). Skipping upload."
+    fi
 
     echo "Finish creating folders"
 
@@ -100,17 +128,33 @@ elif [ "$NODE_TYPE" == "historyserver" ]; then
     done
     echo "HDFS is UP and out of Safe Mode."
 
-    # 2. Now, wait specifically for the MapReduce directory to be created by the NameNode
-    echo "Waiting for NameNode to create /mr-history/tmp..."
-    while ! HADOOP_USER_NAME=mapred hdfs dfs -fs hdfs://namenode:9000 -test -d /mr-history/tmp; do
-        echo "Directory /mr-history/tmp not found yet. NameNode is likely still initializing folders..."
+    # 2. Wait specifically for /mr-history/done to be created AND owned by mapred
+    echo "Waiting for NameNode to initialize /mr-history/done..."
+    while true; do
+        # Check if directory exists
+        if hdfs dfs -fs hdfs://namenode:9000 -test -d /mr-history/done; then
+            # Check if ownership has been switched to mapred (the last step in your NN block)
+            OWNER=$(hdfs dfs -fs hdfs://namenode:9000 -ls -d /mr-history/done | awk '{print $3}')
+            if [ "$OWNER" == "mapred" ]; then
+                echo "Directories ready and owned by mapred. Starting service..."
+                break
+            fi
+        fi
+        echo "Directories not ready or incorrect permissions. Waiting 5s..."
         sleep 5
     done
 
-    echo "HDFS Directories detected! Proceeding to start services."
-
     # 3. Start MapReduce History Server
+    echo "HDFS Directories detected! Proceeding to start services."
     su - mapred -c "mapred --daemon start historyserver"
+
+    # 4. Now, wait specifically for the Spark directory to be created by the NameNode
+    echo "Waiting for Spark JARs to be fully synced from NameNode..."
+    until check_spark_jars_synced; do
+        echo "JAR count mismatch or HDFS not ready. Retrying in 5s..."
+        sleep 5
+    done
+    echo "Spark JARs are synced! Proceeding with service start."
 
     # 5. Start Spark History Server
     echo "Starting Spark History Server..."
@@ -151,6 +195,13 @@ elif [ "$NODE_TYPE" == "thriftserver" ]; then
         echo "Waiting for Hive Metastore service to bind to port 9083..."
         sleep 2
     done
+
+    echo "Waiting for Spark JARs to be fully synced from NameNode..."
+    until check_spark_jars_synced; do
+        echo "JAR count mismatch or HDFS not ready. Retrying in 5s..."
+        sleep 5
+    done
+    echo "Spark JARs are synced! Proceeding with service start."
 
     # 5. Start Spark Thrift Server
     echo "Starting Spark Thrift Server..."

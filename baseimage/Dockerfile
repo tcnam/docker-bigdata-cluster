@@ -96,11 +96,16 @@ ENV PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 ARG SPARK_VERSION
 RUN tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop3.tgz -C /opt && \
     mv /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark && \
-    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3.tgz 
+    rm /opt/spark-${SPARK_VERSION}-bin-hadoop3.tgz
+
 
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
 ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
+
+# Enable spark.shuffle.service
+RUN cp ${SPARK_HOME}/yarn/spark-${SPARK_VERSION}-yarn-shuffle.jar $HADOOP_HOME/share/hadoop/yarn/lib/
+
 # ENV PYSPARK_PYTHON=python3
 # ENV PYSPARK_PATH=usr/bin/python3
 # ENV PATH=$PYSPARK_PATH/bin:$PATH
