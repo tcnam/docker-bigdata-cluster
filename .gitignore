@@ -9,3 +9,8 @@ conf/cluster/krb5/server/principal
 conf/cluster/krb5/server/principal.kadm5
 conf/cluster/krb5/server/principal.kadm5.lock
 conf/cluster/krb5/server/principal.ok
+conf/local/krb5/server/.k5.ATHENA.MIT.EDU
+conf/local/krb5/server/principal
+conf/local/krb5/server/principal.kadm5
+conf/local/krb5/server/principal.kadm5.lock
+conf/local/krb5/server/principal.ok
