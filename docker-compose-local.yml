@@ -1,6 +1,6 @@
 services:
   master:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: master
     hostname: master
     user: root
@@ -23,7 +23,7 @@ services:
         ipv4_address: ${local_master_ip}
   
   edgenode:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: edgenode
     hostname: edgenode
     user: root
@@ -53,7 +53,7 @@ services:
         ipv4_address: ${local_edgenode_ip}
 
   worker:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: worker
     hostname: worker
     user: root

@@ -1,6 +1,6 @@
 services:
   namenode:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: namenode
     hostname: namenode
     user: root
@@ -22,7 +22,7 @@ services:
         ipv4_address: ${cluster_namenode_ip}
   
   resourcemanager:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: resourcemanager
     hostname: resourcemanager
     user: root
@@ -43,7 +43,7 @@ services:
       hadoop_network:
         ipv4_address: ${cluster_resourcemanager_ip}
   secondarynamenode:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: secondarynamenode
     hostname: secondarynamenode
     user: root
@@ -65,7 +65,7 @@ services:
         ipv4_address: ${cluster_secondarynamenode_ip}
 
   worker1:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: worker1
     hostname: worker1
     user: root
@@ -89,7 +89,7 @@ services:
         ipv4_address: ${cluster_worker1_ip}
 
   worker2:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: worker2
     hostname: worker2
     user: root
@@ -113,7 +113,7 @@ services:
         ipv4_address: ${cluster_worker2_ip}
 
   worker3:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: worker3
     hostname: worker3
     user: root
@@ -128,7 +128,7 @@ services:
       - resourcemanager
       - secondarynamenode
     deploy:
-      rsources:
+      resources:
         limits:
           memory: 2048M
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
@@ -137,7 +137,7 @@ services:
         ipv4_address: ${cluster_worker3_ip}
   
   historyserver:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: historyserver
     hostname: historyserver
     user: root
@@ -186,7 +186,7 @@ services:
         ipv4_address: ${cluster_metastore_ip}
 
   thriftserver:
-    image: hadoop_base:1.0
+    image: namtr/hadoop_base:1.0
     container_name: thriftserver
     hostname: thriftserver
     user: hive
@@ -222,7 +222,7 @@ services:
         ipv4_address: ${cluster_thriftserver_ip}
 
   # edgenode:
-  #   image: hadoop_base:1.0
+  #   image: namtr/hadoop_base:1.0
   #   container_name: edgenode
   #   hostname: edgenode
   #   user: spark
@@ -248,7 +248,7 @@ services:
   #     hadoop_network:
   #       ipv4_address: ${cluster_edgenode_ip}
   krb5kdc:
-      image: hadoop_base:1.0
+      image: namtr/hadoop_base:1.0
       container_name: krb5kdc
       hostname: krb5kdc
       user: root
