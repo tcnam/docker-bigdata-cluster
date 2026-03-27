@@ -5,7 +5,7 @@ check_spark_jars_synced() {
     local LOCAL_COUNT=$(ls -1 "$SPARK_HOME/jars" 2>/dev/null | wc -l)
     
     # 2. Count HDFS files (using HADOOP_USER_NAME and explicit NameNode URI)
-    local HDFS_COUNT=$(HADOOP_USER_NAME=hdfs hdfs dfs -fs hdfs://namenode:9000 -count /spark/jars 2>/dev/null | awk '{print $2}')
+    local HDFS_COUNT=$(HADOOP_USER_NAME=hdfs hdfs dfs -fs hdfs://master:9000 -count /spark/jars 2>/dev/null | awk '{print $2}')
     HDFS_COUNT=${HDFS_COUNT:-0}
 
     # 3. Return 0 (True) only if they match and are not zero
@@ -20,7 +20,7 @@ NODE_TYPE=$1
 
 echo "NODE TYPE: $NODE_TYPE"
 
-if [ "$NODE_TYPE" == "namenode" ]; then 
+if [ "$NODE_TYPE" == "master" ]; then 
     if [ ! -d "/var/data/hadoop/hdfs/nn/current" ]; then
         echo "Formatting NameNode..."
         su - hdfs -c "hdfs namenode -format"
@@ -31,7 +31,7 @@ if [ "$NODE_TYPE" == "namenode" ]; then
         echo "Waiting for HDFS to leave safe mode..."
         sleep 3
     done
-
+    su - yarn -c "yarn --daemon start resourcemanager"
     echo "HDFS to leave safe mode, start creating folders"
 
     # create folders in hdfs after leaving safe mode
@@ -111,9 +111,9 @@ if [ "$NODE_TYPE" == "namenode" ]; then
 
     echo "Finish creating folders"
 
-elif [ "$NODE_TYPE" == "resourcemanager" ]; then
-    su - yarn -c "yarn --daemon start resourcemanager"
-    until HADOOP_USER_NAME=hdfs hdfs dfsadmin -fs hdfs://namenode:9000 -safemode get 2>/dev/null | grep -q 'OFF'; do
+elif [ "$NODE_TYPE" == "edgenode" ]; then
+
+    until HADOOP_USER_NAME=hdfs hdfs dfsadmin -fs hdfs://master:9000 -safemode get 2>/dev/null | grep -q 'OFF'; do
         echo "Waiting for HDFS to leave safe mode..."
         sleep 3
     done
@@ -123,9 +123,9 @@ elif [ "$NODE_TYPE" == "resourcemanager" ]; then
     echo "Waiting for NameNode to initialize /mr-history/done..."
     while true; do
         # Check if directory exists
-        if hdfs dfs -fs hdfs://namenode:9000 -test -d /mr-history/done; then
+        if hdfs dfs -fs hdfs://master:9000 -test -d /mr-history/done; then
             # Check if ownership has been switched to mapred (the last step in your NN block)
-            OWNER=$(hdfs dfs -fs hdfs://namenode:9000 -ls -d /mr-history/done | awk '{print $3}')
+            OWNER=$(hdfs dfs -fs hdfs://master:9000 -ls -d /mr-history/done | awk '{print $3}')
             if [ "$OWNER" == "mapred" ]; then
                 echo "Directories ready and owned by mapred. Starting service..."
                 break
@@ -151,28 +151,27 @@ elif [ "$NODE_TYPE" == "resourcemanager" ]; then
     echo "Starting Spark History Server..."
     su - spark -c "${SPARK_HOME}/sbin/start-history-server.sh"
 
-    # 1. Wait for Postgres (The DB for the Metastore)
-    until nc -z "metastore" 5432; do
-        echo "Waiting for Postgres database on metastore:5432..."
+    # 1. Wait for MySQL (The DB for the Metastore)
+    until nc -z "metastore" 3306; do
+        echo "Waiting for MySQL database on metastore:3306..."
         sleep 2
     done
 
-    # 3. Schema Initialization
+    # 2. Schema Initialization
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    if schematool -dbType postgres -info > /dev/null 2>&1; then
+    if schematool -dbType mysql -info > /dev/null 2>&1; then
         echo "Hive schema already initialized."
     else
-        echo "Initializing Hive schema for Postgres..."
-        schematool -dbType postgres -initSchema || echo "Schema already exists or failed."
+        echo "Initializing Hive schema for MySQL..."
+        schematool -dbType mysql -initSchema || echo "Schema already exists or failed."
     fi
     echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
-    # 4. Start Hive Metastore Service (Background)
-    # We use 'nohup' and redirection to keep logs clean and prevent hangup
+    # 3. Start Hive Metastore Service (Background)
     echo "Starting Hive Metastore Service..."
     hive --service metastore &
-    
-    # Wait for the Metastore RPC port (9083) to open before starting Spark
+
+    # 4. Wait for the Metastore RPC port (9083)
     until nc -z localhost 9083; do
         echo "Waiting for Hive Metastore service to bind to port 9083..."
         sleep 2
@@ -183,11 +182,10 @@ elif [ "$NODE_TYPE" == "resourcemanager" ]; then
     --master yarn \
     --deploy-mode client
 
-
 elif [ "$NODE_TYPE" == "worker" ]; then 
     su - hdfs -c "hdfs --daemon start datanode"
     su - yarn -c "yarn --daemon start nodemanager"
-    
+
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
     exit 1

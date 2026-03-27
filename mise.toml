@@ -35,9 +35,9 @@ run = '''
 description = "Create service directories"
 run = '''
 {% if os() == "windows" -%}
-  mkdir .\services\local\namenode .\services\local\worker .\services\local\resourcemanager .\services\local\metastore
+  mkdir .\services\local\master .\services\local\worker .\services\local\edgenode .\services\local\metastore
 {%- else -%}
-  mkdir -p ./services/local/namenode ./services/local/worker ./services/local/resourcemanager ./services/local/metastore
+  mkdir -p ./services/local/master ./services/local/worker ./services/local/edgenode ./services/local/metastore
 {%- endif %}
 '''
 
@@ -45,9 +45,9 @@ run = '''
 description = "Remove service directories"
 run = '''
 {% if os() == "windows" -%}
-  rmdir /S /Q .\services\local\namenode .\services\local\worker .\services\local\resourcemanager .\services\local\metastore
+  rmdir /S /Q .\services\local\master .\services\local\worker .\services\local\edgenode .\services\local\metastore
 {%- else -%}
-  rm -rf ./services/local/namenode ./services/local/worker ./services/local/resourcemanager ./services/local/metastore
+  rm -rf ./services/local/master ./services/local/worker ./services/local/edgenode ./services/local/metastore
 {%- endif %}
 '''
 

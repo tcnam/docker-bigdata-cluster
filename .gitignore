@@ -4,3 +4,8 @@
 .DS_Store
 baseimage/.DS_Store
 Makefile
+conf/cluster/krb5/server/.k5.ATHENA.MIT.EDU
+conf/cluster/krb5/server/principal
+conf/cluster/krb5/server/principal.kadm5
+conf/cluster/krb5/server/principal.kadm5.lock
+conf/cluster/krb5/server/principal.ok
