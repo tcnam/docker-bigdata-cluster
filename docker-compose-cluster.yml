@@ -213,40 +213,42 @@ services:
       - "10000:10000"
       - "10002:10002"
     deploy:
-          resources:
-            limits:
-              memory: 2560M
+      resources:
+        limits:
+          memory: 2560M
     command: ["/entrypoint_cluster.sh", "thriftserver"]
     networks:
       hadoop_network:
         ipv4_address: ${cluster_thriftserver_ip}
 
-  # edgenode:
-  #   image: namtr/hadoop_base:1.0
-  #   container_name: edgenode
-  #   hostname: edgenode
-  #   user: spark
-  #   volumes:
-  #     - config_hadoop:/opt/hadoop/etc/hadoop
-  #     - config_spark:/opt/spark/conf 
-  #     - workspace:/workspace    
-      # - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
-      # - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
-  #   depends_on:
-  #     - namenode
-  #     - secondarynamenode
-  #     - resourcemanager
-  #     - worker1
-  #     - worker2
-  #     - worker3
-  #     - historyserver
-  #   ports:
-  #     # - "2222:22"
-  #     - "4040:4040"
-  #   command: ["/entrypoint_cluster.sh", "edgenode"]
-  #   networks:
-  #     hadoop_network:
-  #       ipv4_address: ${cluster_edgenode_ip}
+  edgenode:
+    image: namtr/hadoop_base:1.0
+    container_name: edgenode
+    hostname: edgenode
+    user: spark
+    volumes:
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf 
+      - workspace:/workspace    
+      - ./conf/cluster/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
+    depends_on:
+      - namenode
+      - secondarynamenode
+      - resourcemanager
+      - worker1
+      - worker2
+      - worker3
+      - historyserver
+      - thriftserver
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    command: ["/entrypoint_cluster.sh", "edgenode"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${cluster_edgenode_ip}
   krb5kdc:
       image: namtr/hadoop_base:1.0
       container_name: krb5kdc
@@ -261,9 +263,9 @@ services:
         - "88:88"
         - "749:749"
       deploy:
-              resources:
-                limits:
-                  memory: 256M
+        resources:
+          limits:
+            memory: 256M
       entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
       networks:
         hadoop_network:
@@ -330,12 +332,12 @@ volumes:
       o: bind
       type: none
       device: ./services/cluster/krb5kdc
-  # workspace:
-  #   driver: local
-  #   driver_opts:
-  #     o: bind
-  #     type: none
-  #     device: ./edge/workspace
+  workspace:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./edge/workspace
   config_hadoop:
     driver: local
     driver_opts:

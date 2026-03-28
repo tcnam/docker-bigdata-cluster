@@ -81,45 +81,20 @@ run = [
 
 [tasks."docker:start_cluster"]
 description = "Start the Hadoop cluster"
-run = "docker compose -f docker-compose-cluster.yml -p cluster up"
+run = "docker-compose -f docker-compose-cluster.yml -p cluster up"
 
 [tasks."docker:start_cluster_d"]
 description = "Start the Hadoop cluster in detached mode"
-run = "docker compose -f docker-compose-cluster.yml -p cluster up -d"
+run = "docker-compose -f docker-compose-cluster.yml -p cluster up -d"
 
 [tasks."docker:stop_cluster"]
 description = "Stop the Hadoop cluster and remove volumes"
-run = "docker compose -p cluster down -v"
+run = "docker-compose -p cluster down -v"
 
 [tasks."docker:start_local"]
 description = "Start the local container"
-run = "docker compose -f docker-compose-local.yml -p local up"
+run = "docker-compose -f docker-compose-local.yml -p local up"
 
 [tasks."docker:stop_local"]
 description = "Stop the local container and remove volumes"
-run = "docker compose -p local down -v"
-
-# Podman commands
-
-# [tasks."podman:build"]
-# description = "Build base image with version args"
-# run = "podman buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
-
-# [tasks."podman:rebuild"]
-# description = "Build base image with version args"
-# run = [
-#   "podman image rm hadoop_base:1.0",
-#   "podman buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t hadoop_base:1.0 ."
-# ]
-
-# [tasks."podman:start_cluster"]
-# description = "Start the Hadoop cluster"
-# run = "podman compose -f docker-compose-cluster.yml -p cluster up"
-
-# [tasks."podman:start_cluster_d"]
-# description = "Start the Hadoop cluster in detached mode"
-# run = "podman compose -f docker-compose-cluster.yml -p cluster up -d"
-
-# [tasks."podman:stop_cluster"]
-# description = "Stop the Hadoop cluster and remove volumes"
-# run = "podman compose -p cluster down -v"
+run = "docker-compose -p local down -v"

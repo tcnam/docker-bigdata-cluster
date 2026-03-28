@@ -1,5 +1,5 @@
 # --- STAGE 1: Extraction Builder ---
-FROM ubuntu:16.04 AS builder
+FROM debian:12-slim AS builder
 
 # Re-declare your ARGs exactly as before
 ARG HADOOP_VERSION
@@ -23,19 +23,31 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
 
 
 # --- STAGE 2: Final Slim Image ---
-FROM ubuntu:16.04
+FROM debian:12-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1. Consolidated APT Install (Includes cleanup in the same layer)
+# 1. Install Base Tools, Python 3.11, and Adoptium Java 8
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-8-jdk wget curl net-tools netcat gnupg libsnappy-dev \
-    krb5-user libkrb5-3 krb5-kdc krb5-admin-server haveged && \
+    wget curl ca-certificates gnupg software-properties-common lsb-release \
+    net-tools netcat-openbsd libsnappy-dev \
+    krb5-user libkrb5-3 krb5-kdc krb5-admin-server haveged \
+    python3 python3-dev python3-pip python3-distutils && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    # Add Adoptium Repository (Universal)
+    mkdir -p /etc/apt/keyrings && \
+    wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor > /etc/apt/keyrings/adoptium.gpg && \
+    # FIXED PATH: /etc/apt/sources.list.d/
+    echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb $(lsb_release -cs) main" > /etc/apt/sources.list.d/adoptium.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends temurin-8-jdk && \
     rm -rf /var/lib/apt/lists/*
 
-# 2. Re-establish your exact JAVA logic
-ARG ARCHITECTURE
-RUN mv /usr/lib/jvm/java-8-openjdk-${ARCHITECTURE} /usr/lib/jvm/java-8-openjdk
+# 2. Dynamic Java Path Logic
+# Instead of hardcoding 'amd64', we find where it was installed
+RUN JAVA_PATH=$(update-java-alternatives -l | grep "8" | awk '{print $3}') && \
+    ln -s "${JAVA_PATH}" /usr/lib/jvm/java-8-openjdk
+
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk \
     JRE_HOME=/usr/lib/jvm/java-8-openjdk/jre
 ENV PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$PATH
@@ -49,6 +61,8 @@ COPY --from=builder /opt/hive /opt/hive
 ENV HADOOP_HOME=/opt/hadoop \
     SPARK_HOME=/opt/spark \
     HIVE_HOME=/opt/hive \
+    PYSPARK_PYTHON=/usr/bin/python3 \
+    PYSPARK_DRIVER_PYTHON=/usr/bin/python3 \
     KRB5_CONFIG=/etc/krb5.conf \
     KRB5_KDC_PROFILE=/etc/krb5kdc/kdc.conf \
     HDFS_NAMENODE_USER=hdfs \
@@ -68,18 +82,12 @@ ENV HADOOP_HOME=/opt/hadoop \
 # 5. Consolidated User & Directory Logic
 RUN groupadd hadoop && \
     usermod -aG hadoop root && echo "root:root" | chpasswd && \
-    useradd -m -g hadoop yarn   && echo "yarn:yarn"     | chpasswd && \
-    useradd -m -g hadoop hdfs   && echo "hdfs:hdfs"     | chpasswd && \
-    useradd -m -g hadoop mapred && echo "mapred:mapred" | chpasswd && \
-    useradd -m -g hadoop spark  && echo "spark:spark"   | chpasswd && \
-    useradd -m -g hadoop hive   && echo "hive:hive"     | chpasswd && \
-    # Create all directories in one command
+    for user in yarn hdfs mapred spark hive; do useradd -m -g hadoop $user && echo "$user:$user" | chpasswd; done && \
     mkdir -p /var/lib/krb5kdc/logs /var/data/hadoop/keytabs /var/data/hadoop/hdfs/nn \
              /var/data/hadoop/hdfs/snn /var/data/hadoop/hdfs/dn /var/data/hadoop/logs \
              /var/data/hadoop/pid /var/data/hadoop/tmp /var/data/hadoop/hive/local \
              /var/data/hadoop/hive/resources /var/data/hadoop/hive/operationlog \
              /var/data/hadoop/hive/logs /workspace && \
-    # Permissions
     chown root:hadoop /var/data/hadoop/keytabs && chmod 750 /var/data/hadoop/keytabs && \
     chown -R hdfs:hadoop /var/data/hadoop/hdfs && \
     chown -R yarn:hadoop /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/tmp && \
@@ -100,6 +108,8 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export POSTGRES_USER=hive' >> /etc/profile && \
     echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
     echo 'export KRB5_CONFIG=/etc/krb5.conf' >> /etc/profile && \
+    echo "export PYSPARK_PYTHON=/usr/bin/python3"; \
+    echo "export PYSPARK_DRIVER_PYTHON=/usr/bin/python3"; \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
 
 WORKDIR /workspace
