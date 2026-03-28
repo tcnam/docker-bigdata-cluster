@@ -31,6 +31,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget curl ca-certificates gnupg software-properties-common lsb-release \
     net-tools netcat-openbsd libsnappy-dev \
+    procps psmisc \
     krb5-user libkrb5-3 krb5-kdc krb5-admin-server haveged \
     python3 python3-dev python3-pip python3-distutils && \
     ln -s /usr/bin/python3 /usr/bin/python && \

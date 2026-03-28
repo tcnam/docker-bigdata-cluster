@@ -232,11 +232,11 @@ elif [ "$NODE_TYPE" == "thriftserver" ]; then
 
     # 5. Start Spark Thrift Server
     echo "Starting Spark Thrift Server..."
-    $SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client
+    su - hive -c "$SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client"
 
     # 6. Start Spark Connect
     echo "Starting Spark Connect Server..."
-    $SPARK_HOME/sbin/start-connect-server.sh
+    su - spark -c "$SPARK_HOME/sbin/start-connect-server.sh"
 
 elif [ "$NODE_TYPE" == "krb5kdc" ]; then
     echo "Starting KDC Node..."

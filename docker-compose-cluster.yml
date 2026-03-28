@@ -189,7 +189,7 @@ services:
     image: namtr/hadoop_base:1.0
     container_name: thriftserver
     hostname: thriftserver
-    user: hive
+    user: root
     volumes:
       - thriftserver:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
@@ -250,26 +250,26 @@ services:
       hadoop_network:
         ipv4_address: ${cluster_edgenode_ip}
   krb5kdc:
-      image: namtr/hadoop_base:1.0
-      container_name: krb5kdc
-      hostname: krb5kdc
-      user: root
-      volumes:
-        - krb5kdc:/var/lib/krb5kdc
-        - config_krb5server:/etc/krb5kdc
-        - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
-      # Kerberos uses Port 88 (UDP/TCP) and 749 for Admin
-      ports:
-        - "88:88"
-        - "749:749"
-      deploy:
-        resources:
-          limits:
-            memory: 256M
-      entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
-      networks:
-        hadoop_network:
-          ipv4_address: ${cluster_krb5kdc_ip}
+    image: namtr/hadoop_base:1.0
+    container_name: krb5kdc
+    hostname: krb5kdc
+    user: root
+    volumes:
+      - krb5kdc:/var/lib/krb5kdc
+      - config_krb5server:/etc/krb5kdc
+      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
+    # Kerberos uses Port 88 (UDP/TCP) and 749 for Admin
+    ports:
+      - "88:88"
+      - "749:749"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${cluster_krb5kdc_ip}
 
 volumes:
   namenode:
