@@ -242,7 +242,7 @@ elif [ "$NODE_TYPE" == "krb5kdc" ]; then
     echo "Starting KDC Node..."
     
     # Check if the database exists; if not, create it
-    if [ ! -f "/var/lib/krb5kdc/principal" ]; then
+    if [ ! -f "/var/kerberos/krb5kdc/principal" ]; then
         echo "Initializing Kerberos Database..."
         # Create the database with a dummy master password 'password'
         # In production, use a more secure method or a mounted stash file

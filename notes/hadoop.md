@@ -63,6 +63,18 @@ Data Processing (YARN):
 - spark-connect_2.12-3.5.5
 - spark-connect-common_2.12-3.5.5
 
+### Kerberos
+
+2 main config files:
+-  krb5.conf: 
+    - client config
+    - /etc/krb5.conf
+- kdc.conf :
+    - server config
+    -  /var/Kerberos/krb5kdc/kdc.conf
+- kadm5.acl:
+    - /var/krb5kdc
+
 
 
 
