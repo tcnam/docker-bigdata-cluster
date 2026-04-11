@@ -187,8 +187,8 @@ elif [ "$NODE_TYPE" == "historyserver" ]; then
     su - spark -c "${SPARK_HOME}/sbin/start-history-server.sh"
 
 
-elif [ "$NODE_TYPE" == "thriftserver" ]; then
-    kinit_service "hive" "thriftserver.keytab" "thriftserver/$MY_HOSTNAME"
+elif [ "$NODE_TYPE" == "sparkgateway" ]; then
+    kinit_service "hive" "sparkgateway.keytab" "sparkgateway/$MY_HOSTNAME"
     # 1. Wait for Postgres (The DB for the Metastore)
     until nc -z "metastore" 5432; do
         echo "Waiting for Postgres database on metastore:5432..."

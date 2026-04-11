@@ -15,9 +15,9 @@ IMAGE_ARCH = "{% if os() == 'macos' %}arm64{% else %}amd64{% endif %}"
 description = "Create service directories"
 run = '''
 {% if os() == "windows" -%}
-  mkdir .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\thriftserver .\services\cluster\krb5kdc
+  mkdir .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\sparkgateway .\services\cluster\krb5kdc
 {%- else -%}
-  mkdir -p ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/thriftserver ./services/cluster/krb5kdc
+  mkdir -p ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/sparkgateway ./services/cluster/krb5kdc
 {%- endif %}
 '''
 
@@ -25,9 +25,9 @@ run = '''
 description = "Remove service directories"
 run = '''
 {% if os() == "windows" -%}
-  rmdir /S /Q .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\thriftserver .\services\cluster\krb5kdc
+  rmdir /S /Q .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\sparkgateway .\services\cluster\krb5kdc
 {%- else -%}
-  rm -rf ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/thriftserver ./services/cluster/krb5kdc
+  rm -rf ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/sparkgateway ./services/cluster/krb5kdc
 {%- endif %}
 '''
 
