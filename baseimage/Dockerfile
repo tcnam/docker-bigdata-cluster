@@ -40,7 +40,7 @@ ARG TARGETARCH
 
 # 1. Install Base Tools, Python 3.11, and Adoptium Java 8
 RUN microdnf install -y \
-    wget ca-certificates \
+    wget ca-certificates ncurses\
     net-tools nc snappy \
     procps-ng psmisc \
     krb5-server krb5-workstation krb5-libs \

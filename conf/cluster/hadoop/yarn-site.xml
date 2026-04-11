@@ -20,6 +20,10 @@
                 <name>yarn.acl.enable</name>
                 <value>0</value>
         </property>
+        <property>
+                <name>yarn.log-aggregation-enable</name>
+                <value>true</value>
+        </property>
 
 <!-- Configurations for ResourceManager-->
         <property>

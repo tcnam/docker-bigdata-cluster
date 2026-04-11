@@ -75,6 +75,9 @@ services:
       - config_spark:/opt/spark/conf
       - ./conf/cluster/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
+    ports:
+      - "9864:9864"   # DataNode UI (Worker 1)
+      - "8042:8042"   # NodeManager UI (Worker 1)
     depends_on:
       - namenode
       - resourcemanager
@@ -82,7 +85,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2048M
+          memory: 3584MB
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -99,6 +102,9 @@ services:
       - config_spark:/opt/spark/conf
       - ./conf/cluster/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
+    ports:
+      - "9865:9864"   # DataNode UI (Worker 2) mapped to host 9865
+      - "8043:8042"   # NodeManager UI (Worker 2) mapped to host 8043
     depends_on:
       - namenode
       - resourcemanager
@@ -106,7 +112,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2048M
+          memory: 3584MB
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -123,6 +129,9 @@ services:
       - config_spark:/opt/spark/conf
       - ./conf/cluster/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
+    ports:
+      - "9866:9864"   # DataNode UI (Worker 3) mapped to host 9866
+      - "8044:8042"   # NodeManager UI (Worker 3) mapped to host 8044
     depends_on:
       - namenode
       - resourcemanager
@@ -130,7 +139,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2048M
+          memory: 3584MB
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -247,27 +256,27 @@ services:
     networks:
       hadoop_network:
         ipv4_address: ${cluster_edgenode_ip}
-  krb5kdc:
-    image: namtr/hadoop_base:1.0
-    container_name: krb5kdc
-    hostname: krb5kdc
-    user: root
-    volumes:
-      - ./conf/cluster/krb5/krb5.conf:/etc/krb5.conf
-      - krb5kdc:/var/kerberos
-      - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
-    # Kerberos uses Port 88 (UDP/TCP) and 749 for Admin
-    ports:
-      - "88:88"
-      - "749:749"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
-    networks:
-      hadoop_network:
-        ipv4_address: ${cluster_krb5kdc_ip}
+  # krb5kdc:
+  #   image: namtr/hadoop_base:1.0
+  #   container_name: krb5kdc
+  #   hostname: krb5kdc
+  #   user: root
+  #   volumes:
+  #     - ./conf/cluster/krb5/krb5.conf:/etc/krb5.conf
+  #     - krb5kdc:/var/kerberos
+  #     - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
+  #   # Kerberos uses Port 88 (UDP/TCP) and 749 for Admin
+  #   ports:
+  #     - "88:88"
+  #     - "749:749"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #   entrypoint: ["/entrypoint_cluster.sh", "krb5kdc"]
+  #   networks:
+  #     hadoop_network:
+  #       ipv4_address: ${cluster_krb5kdc_ip}
 
 volumes:
   namenode:
@@ -324,12 +333,12 @@ volumes:
       o: bind
       type: none
       device: ./services/cluster/thriftserver
-  krb5kdc:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./services/cluster/krb5kdc
+  # krb5kdc:
+  #   driver: local
+  #   driver_opts:
+  #     o: bind
+  #     type: none
+  #     device: ./services/cluster/krb5kdc
   workspace:
     driver: local
     driver_opts:
