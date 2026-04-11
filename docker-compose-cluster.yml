@@ -15,7 +15,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: ${namenode_memory}
     entrypoint: ["/entrypoint_cluster.sh", "namenode"]
     networks:
       hadoop_network:
@@ -37,11 +37,12 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: ${resourcemanager_memory}
     entrypoint: ["/entrypoint_cluster.sh", "resourcemanager"]
     networks:
       hadoop_network:
         ipv4_address: ${cluster_resourcemanager_ip}
+
   secondarynamenode:
     image: namtr/hadoop_base:1.0
     container_name: secondarynamenode
@@ -58,7 +59,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: ${secondarynamenode_memory}
     entrypoint: ["/entrypoint_cluster.sh", "secondarynamenode"]
     networks:
       hadoop_network:
@@ -85,7 +86,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 3584MB
+          memory: ${worker_memory}
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -112,7 +113,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 3584MB
+          memory: ${worker_memory}
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -139,7 +140,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 3584MB
+          memory: ${worker_memory}
     entrypoint: ["/entrypoint_cluster.sh", "worker"]
     networks:
       hadoop_network:
@@ -169,7 +170,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: ${historyserver_memory}
     entrypoint: ["/entrypoint_cluster.sh", "historyserver"]
     networks:
       hadoop_network:
@@ -189,18 +190,18 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: ${metastore_memory}
     networks:
       hadoop_network:
         ipv4_address: ${cluster_metastore_ip}
 
-  thriftserver:
+  sparkgateway:
     image: namtr/hadoop_base:1.0
-    container_name: thriftserver
-    hostname: thriftserver
+    container_name: sparkgateway
+    hostname: sparkgateway
     user: root
     volumes:
-      - thriftserver:/var/data/hadoop
+      - sparkgateway:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
@@ -222,11 +223,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2560M
-    command: ["/entrypoint_cluster.sh", "thriftserver"]
+          memory: ${sparkgateway_memory}
+    command: ["/entrypoint_cluster.sh", "sparkgateway"]
     networks:
       hadoop_network:
-        ipv4_address: ${cluster_thriftserver_ip}
+        ipv4_address: ${cluster_sparkgateway_ip}
 
   edgenode:
     image: namtr/hadoop_base:1.0
@@ -247,11 +248,11 @@ services:
       - worker2
       - worker3
       - historyserver
-      - thriftserver
+      - sparkgateway
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: ${edgenode_memory}
     command: ["/entrypoint_cluster.sh", "edgenode"]
     networks:
       hadoop_network:
@@ -327,12 +328,12 @@ volumes:
       o: bind
       type: none
       device: ./services/cluster/metastore
-  thriftserver:
+  sparkgateway:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: ./services/cluster/thriftserver
+      device: ./services/cluster/sparkgateway
   # krb5kdc:
   #   driver: local
   #   driver_opts:

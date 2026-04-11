@@ -282,16 +282,16 @@ export HADOOP_SECURE_LOG=${HADOOP_LOG_DIR}
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # a) Set JMX options
-export HDFS_NAMENODE_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
+# export HDFS_NAMENODE_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
 #
 # b) Set garbage collection logs
-export HDFS_NAMENODE_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
+# export HDFS_NAMENODE_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
 #
 # c) ... or set them directly
 # export HDFS_NAMENODE_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
 
 # this is the default:
-# export HDFS_NAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS"
+export HDFS_NAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS -Xmx1152m -XX:ParallelGCThreads=2 -XX:+UseG1GC"
 
 ###
 # SecondaryNameNode specific parameters
@@ -301,7 +301,7 @@ export HDFS_NAMENODE_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # This is the default:
-export HDFS_SECONDARYNAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS"
+export HDFS_SECONDARYNAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS -Xmx512m -XX:ParallelGCThreads=1 -XX:+UseG1GC"
 
 ###
 # DataNode specific parameters
@@ -311,7 +311,7 @@ export HDFS_SECONDARYNAMENODE_OPTS="-Dhadoop.security.logger=INFO,RFAS"
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # This is the default:
-export HDFS_DATANODE_OPTS="-Dhadoop.security.logger=ERROR,RFAS"
+export HDFS_DATANODE_OPTS="-Dhadoop.security.logger=ERROR,RFAS -Xmx512m -XX:ParallelGCThreads=1 -XX:+UseG1GC"
 
 # On secure datanodes, user to run the datanode as after dropping privileges.
 # This **MUST** be uncommented to enable secure HDFS if using privileged ports

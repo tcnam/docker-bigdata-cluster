@@ -75,6 +75,11 @@ Data Processing (YARN):
 - kadm5.acl:
     - /var/krb5kdc
 
+Resource Config Values:
+- Docker compose:
+    - namenode: 1536M
+    - 
+
 
 
 
