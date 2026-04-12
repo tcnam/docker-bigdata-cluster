@@ -76,7 +76,7 @@ export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 # prefer any Xmx setting in their respective _OPT variable.
 # There is no default; the JVM will autoscale based upon machine
 # memory size.
-export HADOOP_HEAPSIZE_MAX=512
+export HADOOP_HEAPSIZE_MAX=1536
 
 # The minimum amount of heap to use (Java -Xms).  If no unit
 # is provided, it will be converted to MB.  Daemons will
