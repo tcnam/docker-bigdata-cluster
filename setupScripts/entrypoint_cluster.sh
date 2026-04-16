@@ -81,8 +81,7 @@ if [ "$NODE_TYPE" == "namenode" ]; then
     su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/repl"
     su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/cmroot"
     su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/querylog"
-    su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/warehouse/internal"
-    su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/warehouse/external"
+    su - hdfs -c "hdfs dfs -chmod -R 777 /user/hive/warehouse"
     # su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/tmp/resultscache"
     # su - hdfs -c "hdfs dfs -chmod -R a+w /user/hive/repl/functions"
 
@@ -232,7 +231,7 @@ elif [ "$NODE_TYPE" == "sparkgateway" ]; then
 
     # 5. Start Spark Thrift Server
     echo "Starting Spark Thrift Server..."
-    su - hive -c "$SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client"
+    su - spark -c "$SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client"
 
     # 6. Start Spark Connect
     echo "Starting Spark Connect Server..."
