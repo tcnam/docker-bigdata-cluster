@@ -1,5 +1,5 @@
 /baseimage/files/
-/baseimage/3rdjars
+# /baseimage/3rdjars
 /services/
 .DS_Store
 baseimage/.DS_Store
