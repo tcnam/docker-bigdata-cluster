@@ -92,14 +92,14 @@ if [ "$NODE_TYPE" == "namenode" ]; then
 
     # Create dir for spark
     # Create Spark History directory in HDFS
-    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs"
-    su - hdfs -c "hdfs dfs -mkdir -p /spark/jars"
+    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs /spark/jars /user/spark"
 
     # Permissions: Must be writable by all users (1777) so Spark jobs can write logs
     su - hdfs -c "hdfs dfs -chmod -R 1777 /spark/logs"
 
     # Ownership
-    su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark"
+    su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark /user/spark"
+
     
     # Count local jars
     LOCAL_COUNT=$(ls -1 $SPARK_HOME/jars/*.jar | wc -l)
@@ -123,9 +123,7 @@ if [ "$NODE_TYPE" == "namenode" ]; then
         echo "HDFS /spark/jars is already in sync with local $SPARK_HOME/jars. No action needed."
     fi
 
-    # --- Spark Setup inside the namenode block ---
-    su - hdfs -c "hdfs dfs -mkdir -p /spark/logs /spark/jars /user/spark"
-    su - hdfs -c "hdfs dfs -chmod 1777 /spark/logs"
+    # Ownership
     su - hdfs -c "hdfs dfs -chown -R spark:supergroup /spark /user/spark"
 
     echo "Finish creating folders"
@@ -235,7 +233,7 @@ elif [ "$NODE_TYPE" == "sparkgateway" ]; then
 
     # 6. Start Spark Connect
     echo "Starting Spark Connect Server..."
-    su - spark -c "$SPARK_HOME/sbin/start-connect-server.sh"
+    su - spark -c "$SPARK_HOME/sbin/start-connect-server.sh --master yarn --deploy-mode client"
 
 elif [ "$NODE_TYPE" == "krb5kdc" ]; then
     echo "Starting KDC Node..."
