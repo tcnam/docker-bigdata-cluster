@@ -8,7 +8,7 @@ services:
       - master:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/local/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/local/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
     ports:
       - "9870:9870" # hdfs WebUI
@@ -16,41 +16,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: ${local_master_memory}
     entrypoint: ["/entrypoint_local.sh", "master"]
     networks:
       hadoop_network:
         ipv4_address: ${local_master_ip}
-  
-  edgenode:
-    image: namtr/hadoop_base:1.0
-    container_name: edgenode
-    hostname: edgenode
-    user: root
-    volumes:
-      - edgenode:/var/data/hadoop
-      - config_hadoop:/opt/hadoop/etc/hadoop
-      - config_spark:/opt/spark/conf
-      - ./conf/local/krb5/client/krb5.conf:/etc/krb5.conf
-      - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
-    ports:
-      - "18080:18080" #Spark History Server UI
-      - "19888:19888" #Mapreduce History Server UI
-      - "4040:4040"
-      - "4041:4041"
-      - "15002:15002"
-      - "10000:10000"
-      - "10002:10002"
-    depends_on:
-      - master
-    deploy:
-      resources:
-        limits:
-          memory: 2560M
-    entrypoint: ["/entrypoint_local.sh", "edgenode"]
-    networks:
-      hadoop_network:
-        ipv4_address: ${local_edgenode_ip}
 
   worker:
     image: namtr/hadoop_base:1.0
@@ -61,38 +31,69 @@ services:
       - worker:/var/data/hadoop
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
-      - ./conf/local/krb5/client/krb5.conf:/etc/krb5.conf
+      - ./conf/local/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
+    ports:
+      - "9864:9864"   # DataNode UI
+      - "8042:8042"   # NodeManager UI
     depends_on:
       - master
     deploy:
       resources:
         limits:
-          memory: 2560M
+          memory: ${local_worker_memory}
     entrypoint: ["/entrypoint_local.sh", "worker"]
     networks:
       hadoop_network:
         ipv4_address: ${local_worker_ip}
 
   metastore:
-    image: mysql:5.7
+    image: postgres:13-alpine
     container_name: metastore
     environment:
-      MYSQL_DATABASE: metastore
-      MYSQL_USER: hive
-      MYSQL_PASSWORD: hive
-      MYSQL_ROOT_PASSWORD: root
+      POSTGRES_DB: metastore
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
     volumes:
-      - metastore:/var/lib/mysql
+      - metastore:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5432:5432"
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: ${local_metastore_memory}
     networks:
       hadoop_network:
         ipv4_address: ${local_metastore_ip}
+
+  edgenode:
+    image: namtr/hadoop_base:1.0
+    container_name: edgenode
+    hostname: edgenode
+    user: root
+    volumes:
+      - edgenode:/var/data/hadoop
+      - config_hadoop:/opt/hadoop/etc/hadoop
+      - config_spark:/opt/spark/conf
+      - config_hive:/opt/hive/conf
+      - ./conf/local/krb5/krb5.conf:/etc/krb5.conf
+      - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
+    depends_on:
+      - master
+      - worker
+      - metastore
+    ports:
+      - "15002:15002"
+      - "10000:10000"
+      - "10002:10002"
+    deploy:
+      resources:
+        limits:
+          memory: ${local_edgenode_memory}
+    command: ["/entrypoint_local.sh", "edgenode"]
+    networks:
+      hadoop_network:
+        ipv4_address: ${local_edgenode_ip}
 
 volumes:
   master:
@@ -101,12 +102,6 @@ volumes:
       o: bind
       type: none
       device: ./services/local/master
-  edgenode:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./services/local/edgenode
   worker:
     driver: local
     driver_opts:
@@ -119,6 +114,12 @@ volumes:
       o: bind
       type: none
       device: ./services/local/metastore
+  edgenode:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./services/local/edgenode
   config_hadoop:
     driver: local
     driver_opts:
@@ -137,12 +138,6 @@ volumes:
       o: bind
       type: none
       device: ./conf/local/hive
-  config_krb5server:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./conf/local/krb5/server
 
 networks:
   hadoop_network:

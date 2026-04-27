@@ -581,7 +581,7 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:mysql://metastore:5432/metastore?createDatabaseIfNotExist=true&amp;useSSL=false&amp;serverTimezone=UTC</value>
+    <value>jdbc:postgresql://metastore:5432/metastore</value>
     <description>
       JDBC connect string for a JDBC metastore.
       To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.
@@ -1099,7 +1099,8 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionDriverName</name>
-    <value>com.mysql.jdbc.Driver</value>
+        <value>org.postgresql.Driver</value>
+        <description>PostgreSQL JDBC driver class</description>
   </property>
   <property>
     <name>javax.jdo.PersistenceManagerFactoryClass</name>

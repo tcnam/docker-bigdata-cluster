@@ -48,7 +48,7 @@ export YARN_RESOURCEMANAGER_HEAPSIZE=${HADOOP_HEAPSIZE_MAX}
 # export YARN_RESOURCEMANAGER_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
 #
 # c) Set garbage collection logs from hadoop-env.sh
-export YARN_RESOURCE_MANAGER_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
+# export YARN_RESOURCE_MANAGER_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
 #
 # d) ... or set them directly
 # export YARN_RESOURCEMANAGER_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_LOG_DIR}/gc-rm.log-$(date +'%Y%m%d%H%M')"
@@ -57,7 +57,7 @@ export YARN_RESOURCE_MANAGER_OPTS="${HADOOP_GC_SETTINGS} -Xloggc:${HADOOP_LOG_DI
 # export YARN_RESOURCEMANAGER_OPTS="-Drm.audit.logger=INFO,RMAUDIT"
 #
 #
-# export YARN_RESOURCEMANAGER_OPTS=
+export YARN_RESOURCEMANAGER_OPTS="-Xmx512m -Drm.audit.logger=INFO,RMAUDIT -XX:ParallelGCThreads=2 -XX:+UseG1GC"
 
 ###
 # Node Manager specific parameters
@@ -75,11 +75,11 @@ export YARN_NODEMANAGER_HEAPSIZE=${HADOOP_HEAPSIZE_MAX}
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # a) Enable NodeManager audit logging
-export YARN_NODEMANAGER_OPTS="-Dnm.audit.logger=INFO,NMAUDIT"
+# export YARN_NODEMANAGER_OPTS="-Dnm.audit.logger=INFO,NMAUDIT"
 #
 # See ResourceManager for some examples
 #
-#export YARN_NODEMANAGER_OPTS=
+export YARN_NODEMANAGER_OPTS="-Xmx256m -Dnm.audit.logger=INFO,NMAUDIT -XX:ParallelGCThreads=1 -XX:+UseG1GC"
 
 ###
 # TimeLineServer specific parameters

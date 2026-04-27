@@ -229,7 +229,7 @@ elif [ "$NODE_TYPE" == "sparkgateway" ]; then
 
     # 5. Start Spark Thrift Server
     echo "Starting Spark Thrift Server..."
-    su - spark -c "$SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client"
+    su - spark -c "$SPARK_HOME/sbin/start-thriftserver.sh --master yarn --deploy-mode client --conf spark.dynamicAllocation.enabled=false"
 
     # 6. Start Spark Connect
     echo "Starting Spark Connect Server..."
