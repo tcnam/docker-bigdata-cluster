@@ -6,7 +6,8 @@ java = "{% if os() == 'macos' %}zulu-8.92.0.21{% else %}temurin-8.0.482+8{% endi
 HADOOP_VERSION = "3.4.1"
 SPARK_VERSION = "3.5.5"
 HIVE_VERSION = "3.1.3"
-DOCKER_IMAGE = "namtr/hadoop_base:1.0"
+KYUUBI_VERSION = "1.12.0"
+DOCKER_IMAGE = "namtr/hadoop_base:1.1"
 
 # Architecture Detection
 DOCKER_PLATFORM = "{% if os() == 'macos' %}linux/arm64{% else %}linux/amd64{% endif %}"
@@ -71,13 +72,13 @@ keytool -genkeypair \
 # Docker commannds
 [tasks."docker:build"]
 description = "Build base image with version args"
-run = "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t {{ env.DOCKER_IMAGE }} ."
+run = "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} -t {{ env.DOCKER_IMAGE }} ."
 
 [tasks."docker:rebuild"]
 description = "Build base image with version args"
 run = [
-  "docker image rm {{ env.DOCKER_IMAGE }}",
-  "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} -t {{ env.DOCKER_IMAGE }} ."
+  "docker image rm {{ env.DOCKER_IMAGE }} || true",
+  "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} -t {{ env.DOCKER_IMAGE }} ."
 ]
 
 [tasks."docker:push_image"]
@@ -87,20 +88,20 @@ run = "docker push {{ env.DOCKER_IMAGE }}"
 
 [tasks."docker:start_cluster"]
 description = "Start the Hadoop cluster"
-run = "docker-compose -f docker-compose-cluster.yml -p cluster up"
+run = "docker compose -f docker-compose-cluster.yml -p cluster up"
 
 [tasks."docker:start_cluster_d"]
 description = "Start the Hadoop cluster in detached mode"
-run = "docker-compose -f docker-compose-cluster.yml -p cluster up -d"
+run = "docker compose -f docker-compose-cluster.yml -p cluster up -d"
 
 [tasks."docker:stop_cluster"]
 description = "Stop the Hadoop cluster and remove volumes"
-run = "docker-compose -p cluster down -v"
+run = "docker compose -p cluster down -v"
 
 [tasks."docker:start_local"]
 description = "Start the local container"
-run = "docker-compose -f docker-compose-local.yml -p local up"
+run = "docker compose -f docker-compose-local.yml -p local up"
 
 [tasks."docker:stop_local"]
 description = "Stop the local container and remove volumes"
-run = "docker-compose -p local down -v"
+run = "docker compose -p local down -v"

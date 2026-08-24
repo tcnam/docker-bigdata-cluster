@@ -39,4 +39,12 @@
     <name>hadoop.tmp.dir</name>
     <value>/var/data/hadoop/tmp</value>
   </property>
+  <property>
+      <name>hadoop.proxyuser.spark.hosts</name>
+      <value>*</value>
+  </property>
+  <property>
+      <name>hadoop.proxyuser.spark.groups</name>
+      <value>*</value>
+  </property>
 </configuration>

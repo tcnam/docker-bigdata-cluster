@@ -5,6 +5,7 @@ FROM --platform=$BUILDPLATFORM almalinux:9-minimal AS builder
 ARG HADOOP_VERSION
 ARG SPARK_VERSION
 ARG HIVE_VERSION
+ARG KYUUBI_VERSION
 
 RUN microdnf install -y tar gzip
 
@@ -20,6 +21,8 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     mv /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark && \
     tar -xvzf /opt/apache-hive-${HIVE_VERSION}-bin.tar.gz -C /opt && \
     mv /opt/apache-hive-${HIVE_VERSION}-bin /opt/hive && \
+    tar -xvzf /opt/apache-kyuubi-${KYUUBI_VERSION}-bin.tgz -C /opt && \
+    mv /opt/apache-kyuubi-${KYUUBI_VERSION}-bin /opt/kyuubi && \
     # Logic: Move shuffle jar and 3rd party jars here
     cp /opt/spark/yarn/spark-${SPARK_VERSION}-yarn-shuffle.jar /opt/hadoop/share/hadoop/yarn/lib/ && \
     if [ -d /opt/3rdjars/spark ]; then mv /opt/3rdjars/spark/*.jar /opt/spark/jars/; fi && \
@@ -65,6 +68,7 @@ ENV PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$PATH
 COPY --from=builder /opt/hadoop /opt/hadoop
 COPY --from=builder /opt/spark /opt/spark
 COPY --from=builder /opt/hive /opt/hive
+COPY --from=builder /opt/kyuubi /opt/kyuubi
 COPY --from=builder /opt/krb5/* /var/kerberos/krb5kdc/
 
 # 4. Consolidate Environment Variables
@@ -87,7 +91,9 @@ ENV HADOOP_HOME=/opt/hadoop \
     LD_LIBRARY_PATH=/opt/hadoop/lib/native \
     HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop \
     HIVE_CONF_DIR=/opt/hive/conf \
-    PATH=/opt/hadoop/bin:/opt/hadoop/sbin:/opt/spark/bin:/opt/spark/sbin:/opt/hive/bin:$PATH
+    KYUUBI_HOME=/opt/kyuubi \
+    KYUUBI_CONF_DIR=/opt/kyuubi/conf \
+    PATH=/opt/hadoop/bin:/opt/hadoop/sbin:/opt/spark/bin:/opt/spark/sbin:/opt/hive/bin:/opt/kyuubi/bin:$PATH
 
 # 5. Consolidated User & Directory Logic
 RUN groupadd hadoop && \
@@ -109,7 +115,8 @@ RUN groupadd hadoop && \
     chown -R yarn:hadoop /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/tmp && \
     chmod -R 775 /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/tmp && \
     chown -R hive:hadoop /var/data/hadoop/hive /opt/hive && \
-    chmod -R 775 /var/data/hadoop/hive
+    chmod -R 775 /var/data/hadoop/hive && \
+    chown -R spark:hadoop /opt/kyuubi
 
 # 6. Final Profile setup (Exact strings from original)
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
@@ -124,8 +131,10 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export POSTGRES_USER=hive' >> /etc/profile && \
     echo 'export POSTGRES_PASSWORD=hive' >> /etc/profile && \
     echo 'export KRB5_CONFIG=/etc/krb5.conf' >> /etc/profile && \
+    echo 'export KYUUBI_HOME=/opt/kyuubi' >> /etc/profile && \
+    echo 'export KYUUBI_CONF_DIR=/opt/kyuubi/conf' >> /etc/profile && \
     echo "export PYSPARK_PYTHON=/usr/bin/python3"; \
     echo "export PYSPARK_DRIVER_PYTHON=/usr/bin/python3"; \
-    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$PATH' >> /etc/profile
+    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$KYUUBI_HOME/bin:$PATH' >> /etc/profile
 
 WORKDIR /workspace

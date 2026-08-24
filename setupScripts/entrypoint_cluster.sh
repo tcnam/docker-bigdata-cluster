@@ -226,23 +226,27 @@ elif [ "$NODE_TYPE" == "sparkgateway" ]; then
         sleep 5
     done
     echo "Spark JARs are synced! Proceeding with service start."
+    
+    ## 5. Start Kyuubi gateway
+    echo "Starting Kyuubi gateway Server..."
+    su - spark -c "$KYUUBI_HOME/bin/kyuubi run"
 
-    # 5. Start Spark Thrift Server
-    echo "Starting Spark Thrift Server..."
-    su - spark -c "
-        $SPARK_HOME/sbin/start-thriftserver.sh \
-            --master yarn \
-            --deploy-mode client \
-            --conf spark.dynamicAllocation.enabled=false
-        "
+    # # 5. Start Spark Thrift Server
+    # echo "Starting Spark Thrift Server..."
+    # su - spark -c "
+    #     $SPARK_HOME/sbin/start-thriftserver.sh \
+    #         --master yarn \
+    #         --deploy-mode client \
+    #         --conf spark.dynamicAllocation.enabled=false
+    #     "
 
-    # 6. Start Spark Connect
-    echo "Starting Spark Connect Server..."
-    su - spark -c "
-        $SPARK_HOME/sbin/start-connect-server.sh \
-            --master yarn \
-            --deploy-mode client
-        "
+    # # 6. Start Spark Connect
+    # echo "Starting Spark Connect Server..."
+    # su - spark -c "
+    #     $SPARK_HOME/sbin/start-connect-server.sh \
+    #         --master yarn \
+    #         --deploy-mode client
+    #     "
 
 elif [ "$NODE_TYPE" == "krb5kdc" ]; then
     echo "Starting KDC Node..."

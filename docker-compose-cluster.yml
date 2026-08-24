@@ -1,6 +1,6 @@
 services:
   namenode:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: namenode
     hostname: namenode
     user: root
@@ -22,7 +22,7 @@ services:
         ipv4_address: ${cluster_namenode_ip}
   
   resourcemanager:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: resourcemanager
     hostname: resourcemanager
     user: root
@@ -44,7 +44,7 @@ services:
         ipv4_address: ${cluster_resourcemanager_ip}
 
   secondarynamenode:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: secondarynamenode
     hostname: secondarynamenode
     user: root
@@ -66,7 +66,7 @@ services:
         ipv4_address: ${cluster_secondarynamenode_ip}
 
   worker1:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: worker1
     hostname: worker1
     user: root
@@ -93,7 +93,7 @@ services:
         ipv4_address: ${cluster_worker1_ip}
 
   worker2:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: worker2
     hostname: worker2
     user: root
@@ -120,7 +120,7 @@ services:
         ipv4_address: ${cluster_worker2_ip}
 
   worker3:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: worker3
     hostname: worker3
     user: root
@@ -147,7 +147,7 @@ services:
         ipv4_address: ${cluster_worker3_ip}
   
   historyserver:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: historyserver
     hostname: historyserver
     user: root
@@ -196,7 +196,7 @@ services:
         ipv4_address: ${cluster_metastore_ip}
 
   sparkgateway:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: sparkgateway
     hostname: sparkgateway
     user: root
@@ -205,6 +205,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
+      - config_kyuubi:/opt/kyuubi/conf
       - ./conf/cluster/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_cluster.sh:/entrypoint_cluster.sh
     depends_on:
@@ -220,6 +221,8 @@ services:
       - "15002:15002"
       - "10000:10000"
       - "10002:10002"
+      - "10009:10009"
+      - "10099:10099"
     deploy:
       resources:
         limits:
@@ -230,7 +233,7 @@ services:
         ipv4_address: ${cluster_sparkgateway_ip}
 
   edgenode:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: edgenode
     hostname: edgenode
     user: spark
@@ -258,7 +261,7 @@ services:
       hadoop_network:
         ipv4_address: ${cluster_edgenode_ip}
   # krb5kdc:
-  #   image: namtr/hadoop_base:1.0
+  #   image: namtr/hadoop_base:1.1
   #   container_name: krb5kdc
   #   hostname: krb5kdc
   #   user: root
@@ -364,6 +367,12 @@ volumes:
       o: bind
       type: none
       device: ./conf/cluster/hive
+  config_kyuubi:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/cluster/kyuubi
 
 networks:
   hadoop_network:
