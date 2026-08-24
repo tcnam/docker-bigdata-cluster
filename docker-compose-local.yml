@@ -1,6 +1,6 @@
 services:
   master:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: master
     hostname: master
     user: root
@@ -23,7 +23,7 @@ services:
         ipv4_address: ${local_master_ip}
 
   worker:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: worker
     hostname: worker
     user: root
@@ -67,7 +67,7 @@ services:
         ipv4_address: ${local_metastore_ip}
 
   edgenode:
-    image: namtr/hadoop_base:1.0
+    image: namtr/hadoop_base:1.1
     container_name: edgenode
     hostname: edgenode
     user: root
@@ -76,6 +76,7 @@ services:
       - config_hadoop:/opt/hadoop/etc/hadoop
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
+      - config_kyuubi:/opt/kyuubi/conf
       - ./conf/local/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
     depends_on:
@@ -86,6 +87,8 @@ services:
       - "15002:15002"
       - "10000:10000"
       - "10002:10002"
+      - "10009:10009"
+      - "10099:10099"
     deploy:
       resources:
         limits:
@@ -138,6 +141,12 @@ volumes:
       o: bind
       type: none
       device: ./conf/local/hive
+  config_kyuubi:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./conf/local/kyuubi
 
 networks:
   hadoop_network:
