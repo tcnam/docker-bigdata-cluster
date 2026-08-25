@@ -107,13 +107,13 @@ RUN groupadd hadoop && \
     echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers && \
     mkdir -p /var/kerberos/logs /var/data/hadoop/keytabs /var/data/hadoop/hdfs/nn \
              /var/data/hadoop/hdfs/snn /var/data/hadoop/hdfs/dn /var/data/hadoop/logs \
-             /var/data/hadoop/pid /var/data/hadoop/tmp /var/data/hadoop/hive/local \
+             /var/data/hadoop/pid /var/data/hadoop/work /var/data/hadoop/tmp /var/data/hadoop/hive/local \
              /var/data/hadoop/hive/resources /var/data/hadoop/hive/operationlog \
              /var/data/hadoop/hive/logs /workspace && \
     chown root:hadoop /var/data/hadoop/keytabs && chmod 750 /var/data/hadoop/keytabs && \
     chown -R hdfs:hadoop /var/data/hadoop/hdfs && \
-    chown -R yarn:hadoop /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/tmp && \
-    chmod -R 775 /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/tmp && \
+    chown -R yarn:hadoop /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/work /var/data/hadoop/tmp && \
+    chmod -R 775 /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/work /var/data/hadoop/tmp && \
     chown -R hive:hadoop /var/data/hadoop/hive /opt/hive && \
     chmod -R 775 /var/data/hadoop/hive && \
     chown -R spark:hadoop /opt/kyuubi

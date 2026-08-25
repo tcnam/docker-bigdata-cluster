@@ -60,6 +60,7 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 export KYUUBI_CONF_DIR=${KYUUBI_HOME}/conf
 export KYUUBI_LOG_DIR=/var/data/hadoop/logs
 export KYUUBI_PID_DIR=/var/data/hadoop/pid
+export KYUUBI_WORK_DIR_ROOT=/var/data/hadoop/work
 export SPARK_HOME=/opt/spark
 # export FLINK_HOME=/opt/flink
 export HIVE_HOME=/opt/hive

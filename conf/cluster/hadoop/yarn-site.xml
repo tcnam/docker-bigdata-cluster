@@ -55,7 +55,7 @@
         <!-- Node Manager Memory Config -->
         <property>
                 <name>yarn.nodemanager.resource.memory-mb</name>
-                <value>2048</value>
+                <value>3072</value>
         </property>
         <property>
                 <name>yarn.scheduler.minimum-allocation-mb</name>
@@ -63,7 +63,7 @@
         </property>
         <property>
                 <name>yarn.scheduler.maximum-allocation-mb</name>
-                <value>2048</value>
+                <value>1024</value>
         </property>
         <property>
                 <name>yarn.nodemanager.vmem-check-enabled</name>
@@ -77,7 +77,7 @@
         <!-- Node Manager vcores config -->
         <property>
                 <name>yarn.nodemanager.resource.cpu-vcores</name>
-                <value>2</value>
+                <value>3</value>
         </property>
         <property>
                 <name>yarn.scheduler.minimum-allocation-vcores</name>
@@ -85,7 +85,7 @@
         </property>
         <property>
                 <name>yarn.scheduler.maximum-allocation-vcores</name>
-                <value>2</value>
+                <value>1</value>
         </property>
 
         <!-- Node Manager Application Config -->
