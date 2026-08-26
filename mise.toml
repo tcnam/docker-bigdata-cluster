@@ -81,7 +81,7 @@ run = [
 
 [tasks."docker:push_image"]
 description = "Push image to dockerhub"
-run = "docker push {{ env.hadoop_base_image }}"
+run = "docker push --platform {{ env.DOCKER_PLATFORM }} {{ env.hadoop_base_image }}"
 
 
 [tasks."docker:start_cluster"]
