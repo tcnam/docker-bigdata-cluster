@@ -191,7 +191,6 @@ elif [ "$NODE_TYPE" == "edgenode" ]; then
     # # 6. Start Spark Connect
     # echo "Starting Spark Connect Server..."
     # su - spark -c "$SPARK_HOME/sbin/start-connect-server.sh --master yarn --deploy-mode client"
-
 else
     echo "Unknown NODE_TYPE: $NODE_TYPE"
     exit 1
