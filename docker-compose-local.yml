@@ -51,11 +51,12 @@ services:
     image: postgres:13-alpine
     container_name: metastore
     environment:
-      POSTGRES_DB: metastore
-      POSTGRES_USER: hive
-      POSTGRES_PASSWORD: hive
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - metastore:/var/lib/postgresql/data
+      - ./setupScripts/metastore:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     deploy:
