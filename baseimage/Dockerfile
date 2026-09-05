@@ -48,11 +48,13 @@ RUN microdnf install -y \
     procps-ng psmisc \
     krb5-server krb5-workstation krb5-libs \
     python3 python3-pip python3-devel \
-    shadow-utils sudo\
+    shadow-utils sudo tar\
     && \
     printf "[adoptium]\nname=Adoptium\nbaseurl=https://packages.adoptium.net/artifactory/rpm/centos/9/\$basearch/\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.adoptium.net/artifactory/api/gpg/key/public" > /etc/yum.repos.d/adoptium.repo && \
     microdnf install -y temurin-8-jdk && \
     microdnf clean all && \
+    curl https://mise.run | MISE_INSTALL_PATH=/usr/local/bin/mise sh && \
+    curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh && \
     rm -rf /var/cache/yum /tmp/*
 
 # 2. Dynamic Java Path Logic
@@ -135,6 +137,6 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export KYUUBI_CONF_DIR=/opt/kyuubi/conf' >> /etc/profile && \
     echo "export PYSPARK_PYTHON=/usr/bin/python3"; \
     echo "export PYSPARK_DRIVER_PYTHON=/usr/bin/python3"; \
-    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$KYUUBI_HOME/bin:$PATH' >> /etc/profile
+    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$KYUUBI_HOME/bin:$PATH:/usr/local/bin' >> /etc/profile
 
 WORKDIR /workspace

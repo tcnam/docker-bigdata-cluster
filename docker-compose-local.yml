@@ -78,6 +78,7 @@ services:
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
       - config_kyuubi:/opt/kyuubi/conf
+      - workspace:/workspace
       - ./conf/local/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
     depends_on:
@@ -85,11 +86,12 @@ services:
       - worker
       - metastore
     ports:
-      - "15002:15002"
-      - "10000:10000"
+      - "15002:15002" # spark-connect-server
+      - "10000:10000" # Spark-Thrift-Server
       - "10002:10002"
-      - "10009:10009"
-      - "10099:10099"
+      - "10009:10009" # KYUUBI JDBC
+      - "10099:10099" # KYUUBI REST
+      - "8000:8000" # SQLMESH UI Project
     deploy:
       resources:
         limits:
@@ -124,6 +126,13 @@ volumes:
       o: bind
       type: none
       device: ./services/local/edgenode
+  workspace:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${workspace_path}
+
   config_hadoop:
     driver: local
     driver_opts:
