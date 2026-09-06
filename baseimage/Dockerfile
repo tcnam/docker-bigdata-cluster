@@ -135,8 +135,12 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export KRB5_CONFIG=/etc/krb5.conf' >> /etc/profile && \
     echo 'export KYUUBI_HOME=/opt/kyuubi' >> /etc/profile && \
     echo 'export KYUUBI_CONF_DIR=/opt/kyuubi/conf' >> /etc/profile && \
-    echo "export PYSPARK_PYTHON=/usr/bin/python3"; \
-    echo "export PYSPARK_DRIVER_PYTHON=/usr/bin/python3"; \
+    echo "export PYSPARK_PYTHON=/usr/bin/python3">> /etc/profile && \
+    echo "export PYSPARK_DRIVER_PYTHON=/usr/bin/python3">> /etc/profile && \
     echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$KYUUBI_HOME/bin:$PATH:/usr/local/bin' >> /etc/profile
+
+USER spark
+
+RUN mise use -g python@3.11
 
 WORKDIR /workspace
