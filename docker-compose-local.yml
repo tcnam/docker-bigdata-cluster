@@ -48,7 +48,7 @@ services:
         ipv4_address: ${local_worker_ip}
 
   metastore:
-    image: postgres:13-alpine
+    image: ${POSTGRES_VERSION}
     container_name: metastore
     environment:
       POSTGRES_DB: postgres
@@ -78,7 +78,7 @@ services:
       - config_spark:/opt/spark/conf
       - config_hive:/opt/hive/conf
       - config_kyuubi:/opt/kyuubi/conf
-      - workspace:/workspace
+      # - workspace:/workspace
       - ./conf/local/krb5/krb5.conf:/etc/krb5.conf
       - ./setupScripts/entrypoint_local.sh:/entrypoint_local.sh
     depends_on:
@@ -126,12 +126,12 @@ volumes:
       o: bind
       type: none
       device: ./services/local/edgenode
-  workspace:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${workspace_path}
+  # workspace:
+  #   driver: local
+  #   driver_opts:
+  #     o: bind
+  #     type: none
+  #     device: ${workspace_path}
 
   config_hadoop:
     driver: local

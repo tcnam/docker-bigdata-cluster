@@ -14,41 +14,105 @@ IMAGE_ARCH = "{% if os() == 'macos' %}arm64{% else %}amd64{% endif %}"
 [tasks.cluster_credir]
 description = "Create service directories"
 run = '''
-{% if os() == "windows" -%}
-  mkdir .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\sparkgateway .\services\cluster\krb5kdc
-{%- else -%}
-  mkdir -p ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/sparkgateway ./services/cluster/krb5kdc
-{%- endif %}
+{% if os() == "windows" %}
+{% set dirs = [
+  ".\\services\\cluster\\namenode",
+  ".\\services\\cluster\\secondarynamenode",
+  ".\\services\\cluster\\resourcemanager",
+  ".\\services\\cluster\\worker1",
+  ".\\services\\cluster\\worker2",
+  ".\\services\\cluster\\worker3",
+  ".\\services\\cluster\\historyserver",
+  ".\\services\\cluster\\metastore",
+  ".\\services\\cluster\\sparkgateway",
+  ".\\services\\cluster\\krb5kdc"
+] %}
+mkdir {{ dirs | join(" ") }}
+{% else %}
+{% set dirs = [
+  "./services/cluster/namenode",
+  "./services/cluster/secondarynamenode",
+  "./services/cluster/resourcemanager",
+  "./services/cluster/worker1",
+  "./services/cluster/worker2",
+  "./services/cluster/worker3",
+  "./services/cluster/historyserver",
+  "./services/cluster/metastore",
+  "./services/cluster/sparkgateway",
+  "./services/cluster/krb5kdc"
+] %}
+mkdir -p {{ dirs | join(" ") }}
+{% endif %}
 '''
 
 [tasks.cluster_deldir]
 description = "Remove service directories"
 run = '''
-{% if os() == "windows" -%}
-  rmdir /S /Q .\services\cluster\namenode .\services\cluster\secondarynamenode .\services\cluster\resourcemanager .\services\cluster\worker1 .\services\cluster\worker2 .\services\cluster\worker3 .\services\cluster\historyserver .\services\cluster\metastore .\services\cluster\sparkgateway .\services\cluster\krb5kdc
-{%- else -%}
-  rm -rf ./services/cluster/namenode ./services/cluster/secondarynamenode ./services/cluster/resourcemanager ./services/cluster/worker1 ./services/cluster/worker2 ./services/cluster/worker3 ./services/cluster/historyserver ./services/cluster/metastore ./services/cluster/sparkgateway ./services/cluster/krb5kdc
-{%- endif %}
+{% if os() == "windows" %}
+{% set dirs = [
+  ".\\services\\cluster\\namenode",
+  ".\\services\\cluster\\secondarynamenode",
+  ".\\services\\cluster\\resourcemanager",
+  ".\\services\\cluster\\worker1",
+  ".\\services\\cluster\\worker2",
+  ".\\services\\cluster\\worker3",
+  ".\\services\\cluster\\historyserver",
+  ".\\services\\cluster\\metastore",
+  ".\\services\\cluster\\sparkgateway",
+  ".\\services\\cluster\\krb5kdc"
+] %}
+rmdir /S /Q {{ dirs | join(" ") }}
+{% else %}
+{% set dirs = [
+  "./services/cluster/namenode",
+  "./services/cluster/secondarynamenode",
+  "./services/cluster/resourcemanager",
+  "./services/cluster/worker1",
+  "./services/cluster/worker2",
+  "./services/cluster/worker3",
+  "./services/cluster/historyserver",
+  "./services/cluster/metastore",
+  "./services/cluster/sparkgateway",
+  "./services/cluster/krb5kdc"
+] %}
+rm -rf {{ dirs | join(" ") }}
+{% endif %}
 '''
 
 [tasks.local_credir]
 description = "Create service directories"
 run = '''
-{% if os() == "windows" -%}
-  mkdir .\services\local\master .\services\local\worker .\services\local\edgenode .\services\local\metastore
-{%- else -%}
-  mkdir -p ./services/local/master ./services/local/worker ./services/local/edgenode ./services/local/metastore
-{%- endif %}
+{% if os() == "windows" %}
+mkdir \
+  .\\services\\local\\master \
+  .\\services\\local\\worker \
+  .\\services\\local\\edgenode \
+  .\\services\\local\\metastore
+{% else %}
+mkdir -p \
+  ./services/local/master \
+  ./services/local/worker \
+  ./services/local/edgenode \
+  ./services/local/metastore
+{% endif %}
 '''
 
 [tasks.local_deldir]
 description = "Remove service directories"
 run = '''
-{% if os() == "windows" -%}
-  rmdir /S /Q .\services\local\master .\services\local\worker .\services\local\edgenode .\services\local\metastore
-{%- else -%}
-  rm -rf ./services/local/master ./services/local/worker ./services/local/edgenode ./services/local/metastore
-{%- endif %}
+{% if os() == "windows" %}
+rmdir /S /Q \
+  .\\services\\local\\master \
+  .\\services\\local\\worker \
+  .\\services\\local\\edgenode \
+  .\\services\\local\\metastore
+{% else %}
+rm -rf \
+  ./services/local/master \
+  ./services/local/worker \
+  ./services/local/edgenode \
+  ./services/local/metastore
+{% endif %}
 '''
 
 [tasks.gen_jks]
@@ -70,14 +134,41 @@ keytool -genkeypair \
 # Docker commannds
 [tasks."docker:build"]
 description = "Build base image with version args"
-run = "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} -t {{ env.hadoop_base_image }} ."
+run = [
+  '''
+  docker buildx build \
+    --file ./baseimage/Dockerfile \
+    --no-cache \
+    --platform {{ env.DOCKER_PLATFORM }} \
+    --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} \
+    --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} \
+    --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
+    --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
+    --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} \
+    --build-arg JAVA_VERSION={{ env.JAVA_VERSION }} \
+    -t {{ env.hadoop_base_image }} \
+    .
+  '''
+]
 
 [tasks."docker:rebuild"]
 description = "Build base image with version args"
-run = [
-  "docker image rm {{ env.hadoop_base_image }} || true",
-  "docker buildx build --file ./baseimage/Dockerfile --no-cache --platform {{ env.DOCKER_PLATFORM }} --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} -t {{ env.hadoop_base_image }} ."
-]
+run = '''
+docker image rm {{ env.hadoop_base_image }} || true
+
+docker buildx build \
+  --file ./baseimage/Dockerfile \
+  --no-cache \
+  --platform {{ env.DOCKER_PLATFORM }} \
+  --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} \
+  --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} \
+  --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
+  --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
+  --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} \
+  --build-arg JAVA_VERSION={{ env.JAVA_VERSION }} \
+  -t {{ env.hadoop_base_image }} \
+  .
+'''
 
 [tasks."docker:push_image"]
 description = "Push image to dockerhub"
