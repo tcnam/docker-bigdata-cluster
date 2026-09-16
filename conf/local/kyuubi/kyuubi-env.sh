@@ -56,7 +56,7 @@
 
 ## Examples ##
 
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
 export KYUUBI_CONF_DIR=${KYUUBI_HOME}/conf
 export KYUUBI_LOG_DIR=/var/data/hadoop/logs
 export KYUUBI_PID_DIR=/var/data/hadoop/pid
@@ -68,15 +68,6 @@ export HIVE_HOME=/opt/hive
 export HIVE_HADOOP_CLASSPATH=${HADOOP_CONF_DIR}:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/hdfs:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/yarn:${HADOOP_HOME}/share/hadoop/yarn/lib/*:${HADOOP_HOME}/share/hadoop/yarn/*:${HADOOP_HOME}/share/hadoop/mapreduce/lib/*:${HADOOP_HOME}/share/hadoop/mapreduce/*:${HADOOP_HOME}/contrib/capacity-scheduler/*.jar:${SPARK_HOME}/jars/*
 export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 export YARN_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-export KYUUBI_JAVA_OPTS="
--Xmx10g
--XX:MaxMetaspaceSize=512m
--XX:MaxDirectMemorySize=1024m
--XX:+UseG1GC
--XX:+UseStringDeduplication
--XX:+HeapDumpOnOutOfMemoryError
--XX:HeapDumpPath=${KYUUBI_LOG_DIR}
--Xlog:gc*:file=${KYUUBI_LOG_DIR}/kyuubi-server-gc.log:time,uptime,level,tags:filecount=10,filesize=20M
-"
+export KYUUBI_JAVA_OPTS="-Xmx10g -XX:MaxMetaspaceSize=512m -XX:MaxDirectMemorySize=1024m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+UnlockDiagnosticVMOptions -XX:+UseCondCardMark -XX:+UseGCOverheadLimit -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=./logs -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -verbose:gc -Xloggc:./logs/kyuubi-server-gc-%t.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=20M"
 # export KYUUBI_BEELINE_OPTS="-Xmx2g -XX:+UseG1GC -XX:+UnlockDiagnosticVMOptions -XX:+UseCondCardMark"
 
