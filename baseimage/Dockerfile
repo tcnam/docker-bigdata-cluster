@@ -6,6 +6,7 @@ ARG HADOOP_VERSION
 ARG SPARK_VERSION
 ARG HIVE_VERSION
 ARG KYUUBI_VERSION
+ARG JAVA_VERSION
 
 RUN microdnf install -y tar gzip
 
@@ -26,6 +27,7 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
     # Logic: Move shuffle jar and 3rd party jars here
     cp /opt/spark/yarn/spark-${SPARK_VERSION}-yarn-shuffle.jar /opt/hadoop/share/hadoop/yarn/lib/ && \
     if [ -d /opt/3rdjars/spark ]; then mv /opt/3rdjars/spark/*.jar /opt/spark/jars/; fi && \
+    if [ -d /opt/3rdjars/hive ]; then mv /opt/3rdjars/hive/*.jar /opt/hive/lib/; fi && \
     rm -rf /opt/hadoop/share/doc \
            /opt/spark/examples \
            /opt/spark/data \
@@ -40,6 +42,11 @@ RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
 FROM almalinux:9-minimal
 
 ARG TARGETARCH
+ARG HADOOP_VERSION
+ARG SPARK_VERSION
+ARG HIVE_VERSION
+ARG KYUUBI_VERSION
+ARG JAVA_VERSION
 
 # 1. Install Base Tools, Python 3.11, and Adoptium Java 8
 RUN microdnf install -y \
@@ -48,10 +55,9 @@ RUN microdnf install -y \
     procps-ng psmisc \
     krb5-server krb5-workstation krb5-libs \
     python3 python3-pip python3-devel \
+    ${JAVA_VERSION} \
     shadow-utils sudo tar\
     && \
-    printf "[adoptium]\nname=Adoptium\nbaseurl=https://packages.adoptium.net/artifactory/rpm/centos/9/\$basearch/\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.adoptium.net/artifactory/api/gpg/key/public" > /etc/yum.repos.d/adoptium.repo && \
-    microdnf install -y temurin-8-jdk && \
     microdnf clean all && \
     curl https://mise.run | MISE_INSTALL_PATH=/usr/local/bin/mise sh && \
     curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh && \
@@ -59,11 +65,11 @@ RUN microdnf install -y \
 
 # 2. Dynamic Java Path Logic
 # Instead of hardcoding 'amd64', we find where it was installed
-RUN JAVA_PATH=$(ls -d /usr/lib/jvm/temurin-8-jdk*) && \
-    ln -s "${JAVA_PATH}" /usr/lib/jvm/java-8-openjdk
+RUN JAVA_PATH=$(ls -d /usr/lib/jvm/${JAVA_VERSION}*) && \
+    ln -s "${JAVA_PATH}" /usr/lib/jvm/${JAVA_VERSION}
 
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk \
-    JRE_HOME=/usr/lib/jvm/java-8-openjdk/jre
+ENV JAVA_HOME=/usr/lib/jvm/${JAVA_VERSION} \
+    JRE_HOME=/usr/lib/jvm/${JAVA_VERSION}/jre
 ENV PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$PATH
 
 # 3. Copy extracted folders from Builder (The .tar.gz files stay behind)
@@ -121,10 +127,12 @@ RUN groupadd hadoop && \
     chown -R spark:hadoop /opt/kyuubi
 
 # 6. Final Profile setup (Exact strings from original)
-RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
+RUN echo 'export JAVA_HOME=${JAVA_HOME}' >> /etc/profile && \
+    echo 'export JRE_HOME=${JRE_HOME}' >> /etc/profile && \
+    echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
     echo 'export SPARK_HOME=/opt/spark' >> /etc/profile && \
-    echo 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk' >> /etc/profile && \
+    # echo 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
     echo 'export HIVE_HOME=/opt/hive' >> /etc/profile && \
     echo 'export HIVE_CONF_DIR=$HIVE_HOME/conf' >> /etc/profile && \
@@ -141,6 +149,6 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
 
 USER spark
 
-RUN mise use -g python@3.11
+# RUN mise use -g python@3.11
 
 WORKDIR /workspace

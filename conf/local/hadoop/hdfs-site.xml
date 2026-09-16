@@ -19,7 +19,7 @@
 <configuration>
 <!-- HDFS General -->
     <property>
-            <name>fs.default.name</name>
+            <name>fs.defaultFS</name>
             <value>hdfs://master:9000</value>
     </property>
     <property>

@@ -182,7 +182,7 @@ elif [ "$NODE_TYPE" == "edgenode" ]; then
 
     ## 5. Start Kyuubi gateway
     echo "Starting Kyuubi gateway Server..."
-    su - spark -c "$KYUUBI_HOME/conf/kyuubi-env.sh"
+    # su - spark -c "$KYUUBI_HOME/conf/kyuubi-env.sh"
     su - spark -c "$KYUUBI_HOME/bin/kyuubi run"
 
     # # 5. Start Spark Thrift Server
