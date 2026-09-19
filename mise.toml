@@ -87,13 +87,19 @@ mkdir \
   .\\services\\local\\master \
   .\\services\\local\\worker \
   .\\services\\local\\edgenode \
-  .\\services\\local\\metastore
+  .\\services\\local\\metastore \
+  .\\services\\local\\airflow_share\\logs \
+  .\\services\\local\\airflow_share\\dags \
+  .\\services\\local\\airflow_share\\plugins
 {% else %}
 mkdir -p \
   ./services/local/master \
   ./services/local/worker \
   ./services/local/edgenode \
-  ./services/local/metastore
+  ./services/local/metastore \
+  ./services/local/airflow_share/logs \
+  ./services/local/airflow_share/dags \
+  ./services/local/airflow_share/plugins
 {% endif %}
 '''
 
@@ -105,13 +111,19 @@ rmdir /S /Q \
   .\\services\\local\\master \
   .\\services\\local\\worker \
   .\\services\\local\\edgenode \
-  .\\services\\local\\metastore
+  .\\services\\local\\metastore \
+  .\\services\\local\\airflow_share\\logs \
+  .\\services\\local\\airflow_share\\dags \
+  .\\services\\local\\airflow_share\\plugins
 {% else %}
 rm -rf \
   ./services/local/master \
   ./services/local/worker \
   ./services/local/edgenode \
-  ./services/local/metastore
+  ./services/local/metastore \
+  ./services/local/airflow_share/logs \
+  ./services/local/airflow_share/dags \
+  ./services/local/airflow_share/plugins
 {% endif %}
 '''
 
@@ -145,7 +157,9 @@ run = [
     --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
     --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
     --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} \
+    --build-arg AIRFLOW_VERSION={{ env.AIRFLOW_VERSION }} \
     --build-arg JAVA_VERSION={{ env.JAVA_VERSION }} \
+    --build-arg PYTHON_VERSION={{ env.PYTHON_VERSION }} \
     -t {{ env.hadoop_base_image }} \
     .
   '''
@@ -165,7 +179,9 @@ docker buildx build \
   --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
   --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
   --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} \
+  --build-arg AIRFLOW_VERSION={{ env.AIRFLOW_VERSION }} \
   --build-arg JAVA_VERSION={{ env.JAVA_VERSION }} \
+  --build-arg PYTHON_VERSION={{ env.PYTHON_VERSION }} \
   -t {{ env.hadoop_base_image }} \
   .
 '''
@@ -194,3 +210,12 @@ run = "docker compose -f docker-compose-local.yml -p local up"
 [tasks."docker:stop_local"]
 description = "Stop the local container and remove volumes"
 run = "docker compose -p local down -v"
+
+[tasks.storage_usage_info]
+description = "Show storage usgae on wsl"
+run = "sudo du -h --max-depth=1 -x /"
+
+[tasks.clean_docker]
+description = "Show storage usgae on wsl"
+run = "docker system prune -af"
+

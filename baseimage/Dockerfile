@@ -6,7 +6,9 @@ ARG HADOOP_VERSION
 ARG SPARK_VERSION
 ARG HIVE_VERSION
 ARG KYUUBI_VERSION
+ARG AIRFLOW_VERSION
 ARG JAVA_VERSION
+ARG PYTHON_VERSION
 
 RUN microdnf install -y tar gzip
 
@@ -14,6 +16,7 @@ RUN microdnf install -y tar gzip
 COPY baseimage/files/ /opt/
 COPY baseimage/3rdjars/ /opt/3rdjars/
 COPY baseimage/krb5/ /opt/krb5/
+COPY baseimage/requirements.txt /opt/airflow/requirements.txt
 
 # Extract and move to generic paths in one layer
 RUN tar -xvzf /opt/hadoop-${HADOOP_VERSION}.tar.gz -C /opt && \
@@ -45,7 +48,9 @@ ARG HADOOP_VERSION
 ARG SPARK_VERSION
 ARG HIVE_VERSION
 ARG KYUUBI_VERSION
+ARG AIRFLOW_VERSION
 ARG JAVA_VERSION
+ARG PYTHON_VERSION
 
 # 1. Install Base Tools, Python 3.11, and Adoptium Java 8
 RUN microdnf install -y \
@@ -53,13 +58,18 @@ RUN microdnf install -y \
     net-tools nc snappy \
     procps-ng psmisc ${JAVA_VERSION}\
     krb5-server krb5-workstation krb5-libs \
-    python3 python3-pip python3-devel \
+    python${PYTHON_VERSION} python${PYTHON_VERSION}-devel\
     shadow-utils sudo tar\
+    # airlfow Required Libraries
+    yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel libpq-devel sqlite-devel \
     && \
     microdnf clean all && \
     curl https://mise.run | MISE_INSTALL_PATH=/usr/local/bin/mise sh && \
     curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh && \
     rm -rf /var/cache/yum /tmp/*
+
+RUN ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
+    ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python
 
 # 2. Dynamic Java Path Logic
 # Instead of hardcoding 'amd64', we find where it was installed
@@ -76,11 +86,16 @@ COPY --from=builder /opt/spark /opt/spark
 COPY --from=builder /opt/hive /opt/hive
 COPY --from=builder /opt/kyuubi /opt/kyuubi
 COPY --from=builder /opt/krb5/* /var/kerberos/krb5kdc/
+COPY --from=builder /opt/airflow/requirements.txt /opt/airflow/requirements.txt
+
+
 
 # 4. Consolidate Environment Variables
 ENV HADOOP_HOME=/opt/hadoop \
     SPARK_HOME=/opt/spark \
     HIVE_HOME=/opt/hive \
+    AIRFLOW_HOME=/opt/airflow \
+    AIRFLOW_CONFIG=/opt/airflow/config/airflow.cfg \
     PYSPARK_PYTHON=/usr/bin/python3 \
     PYSPARK_DRIVER_PYTHON=/usr/bin/python3 \
     KRB5_CONFIG=/etc/krb5.conf \
@@ -99,12 +114,12 @@ ENV HADOOP_HOME=/opt/hadoop \
     HIVE_CONF_DIR=/opt/hive/conf \
     KYUUBI_HOME=/opt/kyuubi \
     KYUUBI_CONF_DIR=/opt/kyuubi/conf \
-    PATH=/opt/hadoop/bin:/opt/hadoop/sbin:/opt/spark/bin:/opt/spark/sbin:/opt/hive/bin:/opt/kyuubi/bin:$PATH
+    PATH=/opt/hadoop/bin:/opt/hadoop/sbin:/opt/spark/bin:/opt/spark/sbin:/opt/hive/bin:/opt/kyuubi/bin:/opt/airflow/venv/bin:$PATH
 
 # 5. Consolidated User & Directory Logic
 RUN groupadd hadoop && \
     usermod -aG hadoop root && echo "root:root" | chpasswd && \
-    for user in yarn hdfs mapred spark hive; do \
+    for user in yarn hdfs mapred spark hive airflow; do \
         useradd -m -g hadoop $user && \
         echo "$user:$user" | chpasswd && \
         usermod -aG wheel $user; \
@@ -115,19 +130,25 @@ RUN groupadd hadoop && \
              /var/data/hadoop/hdfs/snn /var/data/hadoop/hdfs/dn /var/data/hadoop/logs \
              /var/data/hadoop/pid /var/data/hadoop/work /var/data/hadoop/tmp /var/data/hadoop/hive/local \
              /var/data/hadoop/hive/resources /var/data/hadoop/hive/operationlog \
-             /var/data/hadoop/hive/logs /workspace && \
+             /var/data/hadoop/hive/logs /workspace \
+             /opt/airflow/{logs,dags,plugins,config} && \
     chown root:hadoop /var/data/hadoop/keytabs && chmod 750 /var/data/hadoop/keytabs && \
     chown -R hdfs:hadoop /var/data/hadoop/hdfs && \
     chown -R yarn:hadoop /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/work /var/data/hadoop/tmp && \
     chmod -R 775 /var/data/hadoop/logs /var/data/hadoop/pid /var/data/hadoop/work /var/data/hadoop/tmp && \
     chown -R hive:hadoop /var/data/hadoop/hive /opt/hive && \
     chmod -R 775 /var/data/hadoop/hive && \
-    chown -R spark:hadoop /opt/kyuubi
+    chown -R spark:hadoop /opt/kyuubi && \
+    chmod -R 775 /opt/airflow && \
+    chown -R airflow:hadoop /opt/airflow
+
 
 # 6. Final Profile setup (Exact strings from original)
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
     echo 'export SPARK_HOME=/opt/spark' >> /etc/profile && \
+    echo 'export AIRFLOW_HOME=/opt/airflow' >> /etc/profile && \
+    echo 'export AIRFLOW_CONFIG=/opt/airflow/config/airflow.cfg' >> /etc/profile && \
     echo 'export JAVA_HOME=/usr/lib/jvm/java-jdk/jre' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
     echo 'export HIVE_HOME=/opt/hive' >> /etc/profile && \
@@ -141,7 +162,18 @@ RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export KYUUBI_CONF_DIR=/opt/kyuubi/conf' >> /etc/profile && \
     echo "export PYSPARK_PYTHON=/usr/bin/python3">> /etc/profile && \
     echo "export PYSPARK_DRIVER_PYTHON=/usr/bin/python3">> /etc/profile && \
-    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$KYUUBI_HOME/bin:$PATH:/usr/local/bin' >> /etc/profile
+    echo 'export PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$HIVE_HOME/bin:$KYUUBI_HOME/bin:$AIRFLOW_HOME/venv/bin:$PATH:/usr/local/bin' >> /etc/profile
+
+# 7. Secure Airflow Installation with Constraints
+# Switch to airflow user so the venv is owned by the correct user, not root.
+USER airflow
+WORKDIR /opt/airflow
+
+RUN python3 -m venv venv && \
+    venv/bin/pip install --upgrade pip wheel && \
+    CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt" && \
+    # venv/bin/pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}" && \
+    venv/bin/pip install -r /opt/airflow/requirements.txt --constraint "${CONSTRAINT_URL}"
 
 USER spark
 
