@@ -64,10 +64,10 @@ RUN microdnf install -y \
 # 2. Dynamic Java Path Logic
 # Instead of hardcoding 'amd64', we find where it was installed
 RUN JAVA_PATH=$(ls -d /usr/lib/jvm/${JAVA_VERSION}*) && \
-    ln -s "${JAVA_PATH}" /usr/lib/jvm/java-openjdk
+    ln -s "${JAVA_PATH}" /usr/lib/jvm/java-jdk
 
-ENV JAVA_HOME=/usr/lib/jvm/java-openjdk \
-    JRE_HOME=/usr/lib/jvm/java-openjdk/jre
+ENV JAVA_HOME=/usr/lib/jvm/java-jdk/jre \
+    JRE_HOME=/usr/lib/jvm/java-jdk/jre
 ENV PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$PATH
 
 # 3. Copy extracted folders from Builder (The .tar.gz files stay behind)
@@ -128,7 +128,7 @@ RUN groupadd hadoop && \
 RUN echo 'export HADOOP_HOME=/opt/hadoop' >> /etc/profile && \
     echo 'export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop' >> /etc/profile && \
     echo 'export SPARK_HOME=/opt/spark' >> /etc/profile && \
-    echo 'export JAVA_HOME=/usr/lib/jvm/java-openjdk' >> /etc/profile && \
+    echo 'export JAVA_HOME=/usr/lib/jvm/java-jdk/jre' >> /etc/profile && \
     echo 'export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native' >> /etc/profile && \
     echo 'export HIVE_HOME=/opt/hive' >> /etc/profile && \
     echo 'export HIVE_CONF_DIR=$HIVE_HOME/conf' >> /etc/profile && \

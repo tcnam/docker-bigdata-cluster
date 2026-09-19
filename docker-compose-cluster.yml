@@ -177,7 +177,7 @@ services:
         ipv4_address: ${cluster_historyserver_ip}
 
   metastore:
-    image: postgres:13-alpine
+    image: ${POSTGRES_VERSION}
     container_name: metastore
     environment:
       POSTGRES_DB: metastore

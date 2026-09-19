@@ -56,7 +56,7 @@
 
 ## Examples ##
 
-export JAVA_HOME=/usr/lib/jvm/java-openjdk
+export JAVA_HOME=/usr/lib/jvm/java-jdk/jre
 export KYUUBI_CONF_DIR=${KYUUBI_HOME}/conf
 export KYUUBI_LOG_DIR=/var/data/hadoop/logs
 export KYUUBI_PID_DIR=/var/data/hadoop/pid
