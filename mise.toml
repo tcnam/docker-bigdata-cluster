@@ -144,26 +144,6 @@ keytool -genkeypair \
 """
 
 # Docker commannds
-[tasks."docker:build"]
-description = "Build base image with version args"
-run = [
-  '''
-  docker buildx build \
-    --file ./baseimage/Dockerfile \
-    --no-cache \
-    --platform {{ env.DOCKER_PLATFORM }} \
-    --build-arg ARCHITECTURE={{ env.IMAGE_ARCH }} \
-    --build-arg HADOOP_VERSION={{ env.HADOOP_VERSION }} \
-    --build-arg SPARK_VERSION={{ env.SPARK_VERSION }} \
-    --build-arg HIVE_VERSION={{ env.HIVE_VERSION }} \
-    --build-arg KYUUBI_VERSION={{ env.KYUUBI_VERSION }} \
-    --build-arg AIRFLOW_VERSION={{ env.AIRFLOW_VERSION }} \
-    --build-arg JAVA_VERSION={{ env.JAVA_VERSION }} \
-    --build-arg PYTHON_VERSION={{ env.PYTHON_VERSION }} \
-    -t {{ env.hadoop_base_image }} \
-    .
-  '''
-]
 
 [tasks."docker:rebuild"]
 description = "Build base image with version args"
@@ -184,6 +164,8 @@ docker buildx build \
   --build-arg PYTHON_VERSION={{ env.PYTHON_VERSION }} \
   -t {{ env.hadoop_base_image }} \
   .
+
+docker system prune -f
 '''
 
 [tasks."docker:push_image"]
@@ -215,7 +197,7 @@ run = "docker compose -p local down -v"
 description = "Show storage usgae on wsl"
 run = "sudo du -h --max-depth=1 -x /"
 
-[tasks.clean_docker]
+[tasks."docker:clean"]
 description = "Show storage usgae on wsl"
-run = "docker system prune -af"
+run = "docker system prune -f"
 

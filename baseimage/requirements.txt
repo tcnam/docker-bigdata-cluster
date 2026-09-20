@@ -4,6 +4,6 @@ pyspark==3.5.5
 apache-airflow==3.3.2
 apache-airflow[celery]==3.3.2
 apache-airflow[redis]==3.3.2
-apache-airflow[postgres]3.3.2
+apache-airflow[postgres]==3.3.2
 psycopg2
 importlib-metadata
